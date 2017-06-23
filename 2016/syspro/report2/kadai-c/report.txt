@@ -1,0 +1,113 @@
+６つのプログラムで速度を測定した。コピーしたのは1.pdf(1.3MB)（容量の関係でkadai-bのフォルダにあります）
+   name  | function | size of buf |  time   | ratio |   read  |  write
+----------------------------------------------------------------------
+mycp1    | read     |         1   |1.152220s|   187 | 1256360 |1256359
+mycp     | write    |       512   |0.006154s|     1 |    2456 |   2455
+mycp8192 | open     |      8192   |0.001232s|  0.20 |     156 |    155
+----------------------------------------------------------------------
+mycpf1   | fread    |         1   |0.070311s|    21 |     309 |    308
+mycpf    | fwrite   |       512   |0.003363s|     1 |     309 |    308
+mycpf8192| foepn    |      8192   |0.002627s|  0.78 |     156 |    307
+mycpf1
+  setvbuf|          |         1   |2.011592s|   598 | 1256360 |1256359
+結果からread,writeを使った場合バッファのサイズが小さいとシステムコールの回数が多くなり時間がかかることがわかった。高水準関数を用いた場合はシステムコールの回数は増加しなかった。fread,fwriteはそれぞれ内部でバッファを持ち、freadは一度にバッファにreadでBUFSIZバイトだけ読み込み、fwriteはバッファがいっぱいになったらwriteで出力するようになっているからである。学科PCのUbuntuではBUFSIZ=8192だったので、mycp8192とmycpf8192でreadの呼び出し回数が一致したと思われる。
+
+またsetvbufで無理やりfread,fwriteのバッファを手元の1byteだけのバッファに割り当てると直接read,writeを呼び出した時と同じ回数システムコールを呼びだすようになった。
+
+
+##########時間計測の実行例##########
+~/sourcecode/syspro/report2/kadai-c$ make all
+gcc -Wall -o mycp mycp.c
+gcc -Wall -o mycp1 mycp1.c
+gcc -Wall -o mycp8192 mycp8192.c
+gcc -Wall -o mycpf mycpf.c
+gcc -Wall -o mycpf1 mycpf1.c
+gcc -Wall -o mycpf8192 mycpf8192.c
+gcc -Wall -o mycpf1setvbuf mycpf1setvbuf.c
+~/sourcecode/syspro/report2/kadai-c$ ./mycp 1.pdf copy.pdf
+0.006154s
+~/sourcecode/syspro/report2/kadai-c$ ./mycp1 1.pdf copy.pdf
+1.152220s
+~/sourcecode/syspro/report2/kadai-c$ ./mycp8192 1.pdf copy.pdf
+0.001232s
+~/sourcecode/syspro/report2/kadai-c$ ./mycpf 1.pdf copy.pdf
+0.003363s
+~/sourcecode/syspro/report2/kadai-c$ ./mycpf1 1.pdf copy.pdf
+0.070311s
+~/sourcecode/syspro/report2/kadai-c$ ./mycpf8192 1.pdf copy.pdf
+0.002627s
+~/sourcecode/syspro/report2/kadai-c$ ./mycpf1setvbuf 1.pdf copy.pdf 
+2.011592s
+
+
+##########バッファサイズの確認##########
+~/sourcecode/syspro/report2/kadai-c$ gcc bufsiz.c -o bufsiz
+~/sourcecode/syspro/report2/kadai-c$ ./bufsiz
+8192
+
+##########トレースの実行例##########
+ichiro@ichiro-Latitude-E5410:~/sourcecode/syspro/report2/kadai-c$ strace -c ./mycp 1.pdf copy.pdf
+0.126102s
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 54.18    0.012295           5      2455           write
+ 44.33    0.010060           4      2456           read
+（中略）
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.022692                  4942         3 total
+ichiro@ichiro-Latitude-E5410:~/sourcecode/syspro/report2/kadai-c$ strace -c ./mycp1 1.pdf copy.pdf
+61.010911s
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.62    1.745471           1   1256359           write
+ 44.36    1.391999           1   1256360           read
+（中略）
+------ ----------- ----------- --------- --------- ----------------
+100.00    3.137933               2512750         3 total
+ichiro@ichiro-Latitude-E5410:~/sourcecode/syspro/report2/kadai-c$ strace -c ./mycp8192 1.pdf copy.pdf
+0.008071s
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 56.86    0.001003           6       155           write
+ 32.26    0.000569           4       156           read
+（中略）
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.001764                   342         3 total
+ichiro@ichiro-Latitude-E5410:~/sourcecode/syspro/report2/kadai-c$ strace -c ./mycpf 1.pdf copy.pdf
+0.022058s
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 47.59    0.001828           6       308           write
+ 27.05    0.001039           3       309           read
+（中略）
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.003841                   655         3 total
+ichiro@ichiro-Latitude-E5410:~/sourcecode/syspro/report2/kadai-c$ strace -c ./mycpf1 1.pdf copy.pdf
+0.094714s
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 46.53    0.000529         132         4           open
+ 11.43    0.000130          13        10           mmap
+ 10.29    0.000117           0       308           write
+  8.62    0.000098           0       309           read
+（中略）
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.001137                   655         3 total
+ichiro@ichiro-Latitude-E5410:~/sourcecode/syspro/report2/kadai-c$ strace -c ./mycpf8192 1.pdf copy.pdf
+0.018000s
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 64.64    0.003621          12       307           write
+ 16.98    0.000951           6       156           read
+（中略）
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.005602                   501         3 total
+~/sourcecode/syspro/report2/kadai-c$ strace -c ./mycpf1setvbuf 1.pdf copy.pdf 
+68.-629542s
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 59.29    2.312771           2   1256359           write
+ 40.68    1.586902           1   1256360           read
+（中略）
+------ ----------- ----------- --------- --------- ----------------
+100.00    3.900567               2512759        10 total

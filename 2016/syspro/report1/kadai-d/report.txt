@@ -1,0 +1,24 @@
+以下は実行例です。
+
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-d$ ls
+a.cpp  d.cpp  g.cpp  j.cpp  m.cpp  p.cpp  s.cpp      t.cpp  w.cpp  z.cpp
+b.cpp  e.cpp  h.cpp  k.cpp  n.cpp  q.cpp  shell.sh   u.cpp  x.cpp
+c.cpp  f.cpp  i.cpp  l.cpp  o.cpp  r.cpp  shell.sh~  v.cpp  y.cpp
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-d$ chmod u+x shell.sh; ./shell.sh
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-d$ ls
+a.cc   c.cpp  f.cc   h.cpp  k.cc   m.cpp  p.cc   r.cpp      t.cc   v.cpp  y.cc
+a.cpp  d.cc   f.cpp  i.cc   k.cpp  n.cc   p.cpp  s.cc       t.cpp  w.cc   y.cpp
+b.cc   d.cpp  g.cc   i.cpp  l.cc   n.cpp  q.cc   s.cpp      u.cc   w.cpp  z.cc
+b.cpp  e.cc   g.cpp  j.cc   l.cpp  o.cc   q.cpp  shell.sh   u.cpp  x.cc   z.cpp
+c.cc   e.cpp  h.cc   j.cpp  m.cc   o.cpp  r.cc   shell.sh~  v.cc   x.cpp
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-d$ cat a.cc
+/*
+Author:IchiroHiraide<buko1062000@yahoo.co.jp>
+*/
+
+inta_val;
+
+inta_fun(intarg)
+{
+	returnarg+a_val;
+}

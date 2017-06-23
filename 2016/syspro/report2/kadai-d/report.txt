@@ -1,0 +1,15 @@
+mywcを作成し、wcと比較実行しました。
+区切り文字であるかの判定には<ctype.h>のisspaceを使いました。
+##########実行例##########
+ichiro:~/sourcecode/syspro/report2/kadai-d$ make
+gcc -Wall -o mywc mywc.c
+ichiro:~/sourcecode/syspro/report2/kadai-d$ wc test.txt 
+  4 120 850 test.txt
+ichiro:~/sourcecode/syspro/report2/kadai-d$ ./mywc test.txt
+      4    120    850
+ichiro:~/sourcecode/syspro/report2/kadai-d$ man wc > manwc.txt
+ichiro:~/sourcecode/syspro/report2/kadai-d$ wc manwc.txt 
+  70  276 2278 manwc.txt
+ichiro:~/sourcecode/syspro/report2/kadai-d$ ./mywc manwc.txt 
+     70    276   2278
+ichiro:~/sourcecode/syspro/report2/kadai-d$ 

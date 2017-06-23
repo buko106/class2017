@@ -1,0 +1,18 @@
+実行例は以下のようです
+
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-a$ make
+gcc -c a.c -Wall
+gcc -c b.c -Wall
+gcc -c c.c -Wall
+gcc a.o b.o c.o -Wall -o prog
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-a$ ./prog 
+Hello, C world!
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-a$ ls
+#report.txt#  Makefile~  a.c~  b.c  b.h~  c.c  c.o   report.txt
+Makefile      a.c        a.o   b.h  b.o   c.h  prog
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-a$ make clean 
+rm -f *.o prog
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-a$ ls
+#report.txt#  Makefile~  a.c~  b.h   c.c  report.txt
+Makefile      a.c        b.c   b.h~  c.h
+

@@ -1,0 +1,178 @@
+関す論理型プログラミング実験第６回
+161026 平出一郎
+
+
+06-161026/interpreter/ にあるインタプリタで
+課題１〜３　発展１、２に対応しています
+06-161026/q4 にあるインタプリタで
+課題４に回答しています(レポートでも一番最後にあります)
+
+########################################
+################問１####################
+########################################
+まずfun式はVFun of name * expr * ref envという形で定義し
+関数適用は
+(i)引数を評価する
+(ii)その値をfun式の引数になっている変数に束縛しクロージャが内部に持っている環境に追加
+(iii)その環境の上で式を評価
+という手順になります。
+
+VFun (_,_,_)をprint_valueに適用すると<fun>と表示するようにしました。
+
+#####実行例#####
+
+# fun x -> x + 1;;
+- = <fun>
+# (fun x -> x + 1) 10;;
+- = 11
+# let add = fun x -> fun y -> x+y;;
+val add = <fun>
+# add 1 2;;
+- = 3
+# let inc = add 1;;
+val inc = <fun>
+# inc 10;;
+- = 11
+
+
+########################################
+################問２####################
+########################################
+
+実装方法はVFun of name * expr * ref envと環境への参照をクロージャ内部に持つという方法です。
+
+スライドのとおりにELetRec,CRecDecの評価方法は
+(i)ダミーの、環境への参照をつくり
+(ii)評価時の環境に自分自身を追加した環境への参照をダミーに代入
+(iii)その環境で本体の式を評価 or そのクロージャを加えた環境を返す
+という流れです
+
+EFunやEAppの評価は値を参照に変えたり参照から取り出すようにするなどの変更で済みます
+
+#####実行例#####
+
+# let rec fact n = if n<2 then 1 else fact (n-1) * n;;
+val fact = <fun>
+# fact 10;;
+- = 3628800
+# let rec fib n = if n<2 then n else fib (n-1) + fib (n-2) in fib 10;;
+- = 55
+
+########################################
+################問３####################
+########################################
+
+スライドの方法２を用いました。
+
+
+# let rec odd n = if n=0 then false else even (n-1)
+     and even n = if n=0 then true  else  odd (n-1);;
+val even = <fun>
+val odd = <fun>
+# even 100;;
+- = true
+# odd 100;;
+- = false
+# let rec mod_3_0 n = if n=0 then true else mod_3_2 (n-1)
+      and mod_3_1 n = if n=0 then false else mod_3_0 (n-1)
+      and mod_3_2 n = if n=0 then false else mod_3_1 (n-1)
+      in
+      mod_3_0 99;;
+
+
+########################################
+###############発展１###################
+########################################
+
+parserを改造し
+fun x y z -> eはfun x -> fun y -> fun z -> e
+let f x y = eは let f = fun x -> fun y -> e
+と等価にparseされるようにしました。
+fun xやlet fの左に=ではなくIDが来ていたらその部分をEFun( ID , e)に順々に木を作っていく感じです。
+
+#####実行例#####
+
+# fun x y z -> x*y*z;;
+- = <fun>
+# let mul3 = fun x y z -> x*y*z;;
+val mul3 = <fun>
+# mul3 5;;
+- = <fun>
+# mul3 5 5;;
+- = <fun>
+# mul3 5 5 5;;
+- = 125
+# let mul x y = x * y;;
+val mul = <fun>
+# mul 10;;
+- = <fun>
+# mul 10 10;;
+- = 100
+
+########################################
+###############発展３###################
+########################################
+
+exprにEDfun of name*expr
+valueにVDfun of name*expr
+を追加しました。dfunは内部に環境を持ちません（動的束縛なのであたりまえ）。
+EDfunの評価はしたようにするだけ
+  | EDfun( x , e) -> VDfun ( x , e )
+
+あとはEApp(e1,e2)の評価方法をe1がVDfunであった時の場合に関して追加
+引数を評価時の環境に束縛することで動的束縛になります。
+
+#####実行例#####
+# let fact = dfun n -> if n<2 then 1 else n*fact (n-1);;
+val fact = <dfun>
+# fact 10;;
+- = 3628800
+
+#####考察#####
+一般化して多変数関数を実装することを考えます。ここでは例として累乗をする関数を作ってみます。気持ちとしては(この構文を許すかは別として)
+let pow = dfun a n -> if n=0 then 1 else a * pow a (n-1)
+という記述をしたいですが、これをdfun a-> dfun -> nの略記だと思うとうまく行きません。そのように実装した例が以下です
+
+#####だめな例#####
+# let pow = dfun a n -> if n=0 then 1 else a * pow a (n-1);;
+val pow = <dfun>
+# pow 2;;
+- = <dfun>
+# pow 2 10;;
+Error: EvalErr("Unbound variable a")
+
+pow 2の適用結果は<dfun>なので内部に環境を持ちません。
+つまりpow 2 10の評価においてもpow 2と部分適用された時点でa=2という情報はどこにも束縛されていないのでUnboundとなったわけです。
+そこでdfun a b c->をdfun a -> fun b -> fun cの略記だと思ってparseするとうまく行きます。
+
+####よい例#####
+# let pow = dfun a n -> if n=0 then 1 else a * pow a (n-1);;
+val pow = <dfun>
+# pow 2;;
+- = <fun>
+# pow 2 10;;
+- = 1024
+
+提出したインタプリタはこの実装になっています。これだと部分適用が始めて行われた環境が取り込まれてしまうので真の動的束縛と言えないきがします。
+より良い方法としてはVDfunは内部にここまでに適用されてきた引数のみを束縛した環境を保持し、全ての適用が終わった時点での環境にこれを加えて評価することもできると思います。
+
+########################################
+################問４####################
+########################################
+
+06-161026/q4にあるインタプリタはスライドの方法１を使いました。
+この方法だと再帰呼出しのたびに環境数珠つなぎにどんどん大きくなるので嫌いです。
+
+#####実行例#####
+# let rec fact n = if n<2 then 1 else n * fact (n-1) in fact 10;;
+- = 3628800
+# let rec fact n = if n<2 then 1 else n * fact (n-1) in fact 100;;
+- = 0
+# let rec fact n = if n<2 then 1 else n * fact (n-1) in fact 1000;;
+- = 0
+# let rec fact n = if n<2 then 1 else n * fact (n-1) in fact 10000;;
+- = 0
+# let rec fact n = if n<2 then 1 else n * fact (n-1) in fact 100000;;
+- = 0
+# let rec fact n = if n<2 then 1 else n * fact (n-1) in fact 1000000;;
+Fatal error: exception Stack_overflow

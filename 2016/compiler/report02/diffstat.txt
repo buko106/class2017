@@ -1,0 +1,6 @@
+ Makefile   |    1 +
+ cse.ml     |   60 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ cse.mli    |    1 +
+ kNormal.ml |    2 +-
+ main.ml    |    7 +++++--
+ 5 files changed, 68 insertions(+), 3 deletions(-)

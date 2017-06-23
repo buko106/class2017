@@ -1,0 +1,14 @@
+let
+  function fib (n: int) :int =
+    let 
+       function fibit (n: int, current:int, prev:int): int =
+       if n=0 then current
+       else 
+       fibit(n-1, current+prev, current)
+    in
+      fibit(n,0,1)
+    end
+in
+   fib(3)
+end
+

@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+05-161026 平出一郎 情報論理演習レポート4/22提出分
+
+Ex. 1.16
+
+$\cdot x \sim_f x' \overset{\rm def}{\Leftrightarrow}f(x)=f(x')$は同値関係であることを示せ。
+
+(反射的)$f(x)=f(x)$より$x \sim_f x$.(対称的)$x \sim_f x' \Leftrightarrow f(x)=f(x')$ならば$f(x')=f(x) \Leftrightarrow x' \sim_f x$(推移的)$x \sim_f x'$かつ$x' \sim_f x''\Leftrightarrow f(x)=f(x')=f(x'')$より$x \sim_f x''$
+
+$\cdot \sim_f$が$\Delta_X$に一致する必要十分条件は$f$が単射であることを示せ。
+
+「$\sim_f$が$\Delta_X$に一致する」$\Leftrightarrow$ 「 $ x \sim_f x' \Leftrightarrow x \Delta_X x'$ 」 $\Leftrightarrow$ 「 $ f(x)=f(x') \Leftrightarrow x=x'$ 」$\Leftrightarrow$ 「 $ f$は単射 」
+
+Ex. 1.19
+
+1.$\lesssim\cap\gtrsim$が同値関係であることを示せ。
+
+(i)$(x,x)\in\lesssim\cap\gtrsim \Leftrightarrow (x \lesssim x \wedge x \gtrsim x) $これはpreoderの定義から従う。
+
+(ii)$(x,y)\in\lesssim\cap\gtrsim\Leftrightarrow (x \lesssim y \wedge x \gtrsim y) \Leftrightarrow  (y \lesssim x \wedge y \gtrsim x) \Leftrightarrow (y,x)\in\lesssim\cap\gtrsim$
+
+(iii)$(x,y),(y,z)\in\lesssim\cap\gtrsim \Leftrightarrow (x \lesssim y \wedge x \gtrsim y \wedge y \lesssim z \wedge y \gtrsim z)$
+
+preoderの推移律から
+
+$\Leftrightarrow (x \lesssim z \wedge x \gtrsim z) \Leftrightarrow (x,z)\in\lesssim\cap\gtrsim$
+
+2.「$x \sim x',y \sim y',x \lesssim y \Rightarrow x' \lesssim y'$」を示せ
+
+$ x \sim x' \Rightarrow x \lesssim x', y \sim y' \Rightarrow y \lesssim y'$より
+
+$x \sim x',y \sim y',x \lesssim y \Rightarrow x \lesssim x' \wedge y \lesssim y' \wedge x \lesssim y \Rightarrow x' \lesssim y' $
+
+3.引き起こされた関係$\lesssim$は$X/\sim$上の半順序であることを示せ。
+
+(i)$x \lesssim x $より$[x] \lesssim [x]$
+
+(ii)$[x] \lesssim [y] \wedge [y] \lesssim [x] \Leftrightarrow x \lesssim y \wedge y \lesssim x \Leftrightarrow x \lesssim y \wedge x \gtrsim y \Leftrightarrow x \sim y \Leftrightarrow [x]=[y]$より反対称的
+
+(iii)$[x] \lesssim [y] \wedge [y] \lesssim [z] \Leftrightarrow x \lesssim y \wedge y \lesssim z \Rightarrow x \lesssim z \Leftrightarrow [x] \lesssim [z]$で推移的
+
+以上より、partial orderであることが確かめられた。
+
+\end{document}

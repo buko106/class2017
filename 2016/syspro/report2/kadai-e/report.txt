@@ -1,0 +1,17 @@
+パーミッションはstatでstat構造体からst_modeを読み出しました
+リンク数はst_nlink
+ユーザ名グループ名はst_uid,st_gidをgetpwuid,getgrgidに投げて取得
+ファイルサイズはst_size
+日時はst_atimeを標準関数のctimeに投げて取得しました。
+
+##########実行例##########
+ichiro:~/sourcecode/syspro/report2/kadai-e$ gcc myls.c -o myls -Wall
+ichiro:~/sourcecode/syspro/report2/kadai-e$ ./myls
+-rw-rw-r-- 1 ichiro ichiro    438  4月 28 17:50 myls.c~
+-rw-rw-r-- 1 ichiro ichiro   1204  4月 29 01:22 myls.c
+-rwxrwxr-x 1 ichiro ichiro   9082  4月 29 01:22 myls
+ichiro:~/sourcecode/syspro/report2/kadai-e$ ls -l
+合計 20
+-rwxrwxr-x 1 ichiro ichiro 9082  4月 29 01:22 myls
+-rw-rw-r-- 1 ichiro ichiro 1204  4月 29 01:22 myls.c
+-rw-rw-r-- 1 ichiro ichiro  438  4月 28 17:50 myls.c~

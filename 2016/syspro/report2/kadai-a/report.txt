@@ -1,0 +1,40 @@
+getpid();を1000回実行しても
+strace -cによるとgetpidは1回しか呼ばれていないことがわかった。
+これはmanに"Since glibc version 2.3.4, the  glibc  wrapper  function  for  getpid()  caches  PID,  so  as  to  avoid additional system calls when a process  calls getpid() repeatedly."と書いてあるのでPIDがキャッシュされているためと思われる。
+
+syscall(SYS_getpid);によってキャッシュなしで実行できたのでこれを1000回繰り返した。a.outは標準入力から読み込んだ整数の回数だけsyscall(SYS_getpid)を繰り返して終了するプログラムである。
+
+実行時間は呼び出し回数に対してほぼ線形で一回で100nsほどだった。straceをしたときに時間がかかるのはトレースに時間がかかっているためである。
+
+実行例
+~/sourcecode/syspro/report2/kadai-a$ gcc a.c
+~/sourcecode/syspro/report2/kadai-a$ ./a.out
+1
+368962-368959=3us
+~/sourcecode/syspro/report2/kadai-a$ ./a.out
+1000
+344835-344693=142us
+~/sourcecode/syspro/report2/kadai-a$ ./a.out
+10000
+566351-565140=1211us
+~/sourcecode/syspro/report2/kadai-a$ strace -c ./a.out
+1000
+572283-546666=25617us
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 88.02    0.004195           4      1000           getpid
+  2.87    0.000137          15         9           mmap
+  1.85    0.000088          44         2           read
+  1.80    0.000086          29         3         3 access
+  1.72    0.000082          82         1           brk
+  0.82    0.000039          10         4           mprotect
+  0.69    0.000033          17         2           open
+  0.69    0.000033          33         1           execve
+  0.63    0.000030           8         4           fstat
+  0.36    0.000017          17         1           munmap
+  0.23    0.000011           6         2           close
+  0.21    0.000010          10         1           write
+  0.10    0.000005           5         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.004766                  1031         3 total
+

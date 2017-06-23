@@ -1,0 +1,23 @@
+05-161026 平出一郎
+言語処理系論第６回レポート課題
+
+tcheck.mlにおいて追記したのは以下の部分です。再帰関数を許す型検査なので関数の返り値の型は省略できないと思ったのでそのようにしました。
+
+ | FunctionDec(f, args, tyopt, exp) ->
+    let ty = match tyopt with
+      | Some ty -> ty    (*再帰関数を含む型検査なので返り値の型は省略不可*)
+      | _ -> (report ("no type dec in function declaration"^
+                        (string_of_pos (snd f))); assert false)
+    in
+    let argty = List.map (fun (_,_,t) -> t) args in
+    let argname=List.map (fun ((x,_),f,t) -> (x,f,t) ) args in
+    let tenv' = extend_tenv_f f (argty,ty) tenv in  (*fを含む型環境*)
+    let tenv'' = 
+      List.fold_left (fun tenv (symbol , _ , ty) -> extend_tenv_v symbol ty tenv) tenv' args in (*f,x_1,...,x_nを含む型環境*)
+    let (exp' ,ty') = tcheck exp tenv'' in
+    let _ = if ty=ty' then ()
+            else (report ("type error in function declaration"^
+                            (string_of_pos (snd f))); assert false)
+    in (*型が一致してるかチェック*)
+    let (f',_) = lookup_fun f tenv' in
+    (Absyn2.FunctionDec(f', argname , ty , exp'), tenv')

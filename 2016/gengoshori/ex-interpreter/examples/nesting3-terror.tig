@@ -1,0 +1,17 @@
+let
+  var x: int := 1
+in
+let
+  function f (n: int) =
+   let function f (x:string) =
+      (print(x); f(x))
+   in
+     f(x)
+   end
+in
+   f(1)
+end
+end
+
+
+

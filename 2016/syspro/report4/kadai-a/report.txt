@@ -1,0 +1,20 @@
+UDPを用いたechoサーバーとクライアントを作りました。
+クライアントではsendtoでアドレスを指定できるのでbindは省略しました。
+サーバーでは毎回recvfromで送信元アドレスを認識してそこにechoするので、複数クライアントにも対応できているはずです。
+
+####################実行例####################
+ichiro:~/sourcecode/syspro/report4/kadai-a$ make
+gcc -o udpechoserver udpechoserver.c
+gcc -o udpechoclient udpechoclient.c
+ichiro:~/sourcecode/syspro/report4/kadai-a$ ./udpechoserver 8100 &
+[1] 6561
+ichiro:~/sourcecode/syspro/report4/kadai-a$ jobs
+[1]+  実行中               ./udpechoserver 8100 &
+ichiro:~/sourcecode/syspro/report4/kadai-a$ ./udpechoclient 127.0.0.1 8100
+hoge
+hoge
+fuga
+fuga
+ichiro:~/sourcecode/syspro/report4/kadai-a$ fg
+./udpechoserver 8100
+^C終了します

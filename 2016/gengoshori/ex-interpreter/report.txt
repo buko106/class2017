@@ -1,0 +1,43 @@
+05-161026平出一郎
+
+mini-tigerインタプリタ
+
+下のように追加しました。
+
+and eval_dec dec env =
+  match dec with
+    FunctionDec(f,fields,_,e) -> 
+       let oenv = ref [] in
+       let closure = Fun( List.map (fun (x,_,_) -> x) fields  , e , oenv) in
+       (oenv := extend_venv env [f] [closure] ; !oenv )
+  | VarDec(x,_,_,e) -> 
+       let v = eval_exp e env in
+         extend_venv env [x] [v]
+
+再帰関数として自分自身を呼び出せるように自分自身の入った環境へのリファレンスを持たせるようにしました。
+
+######実行例#####
+
+# open Main;;
+# interpret "examples/fib.tig";;
+val it = 5
+- : unit = ()
+# interpret "examples/fibit.tig";;
+val it = 2
+- : unit = ()
+# interpret "examples/nesting.tig";;
+val it = 1
+- : unit = ()
+# interpret "examples/nesting2.tig";;
+val it = ()
+- : unit = ()
+# interpret "examples/nesting3-terror.tig";;
+Type mismatch in function call f at line 65 col 5
+Exception: Assert_failure ("tcheck.ml", 108, 45).
+# interpret "examples/test.tig";;
+abc
+val it = 2
+- : unit = ()
+# interpret "examples/test2.tig";;
+val it = 9
+- : unit = ()

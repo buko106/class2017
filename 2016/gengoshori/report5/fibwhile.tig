@@ -1,0 +1,21 @@
+let
+   function fib (n: int) :int =
+     let var i:int := 0 in
+        let var fn1:int := 1 in
+           let var fn:int := 0 in
+              let var sum:int := 0 in
+                 while n>i do
+                 (
+                    sum := fn1 + fn;
+                    fn  := fn1;
+                    fn1 := sum;
+                    i   := i + 1;
+                 );
+                 fn
+              end
+           end
+        end
+     end
+in
+   fib(5)
+end

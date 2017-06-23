@@ -1,0 +1,152 @@
+############################################
+####################問１####################
+############################################
+パターンマッチによってできるのは+1や-1だけなので、演算を以下のような帰納的な定義にすることで再帰関数がつくれる。
+
+x + y = x            (when y=0) 
+       (x+1) + (y-1) (otherwise)  
+
+x - y = 0            (when x=0)
+        x            (when y=0)
+       (x-1) - (y-1) (otherwise)
+
+x * y = 0           (when y=0)
+        x*(y-1) + x (otherwise)
+
+x ^ y = 1 (when y=0)
+        x * (x ^ (y-1))
+##########実行例##########
+# #use "q1.ml";;
+type nat = Z | S of nat
+val add : nat -> nat -> nat = <fun>
+val sub : nat -> nat -> nat = <fun>
+val mul : nat -> nat -> nat = <fun>
+val pow : nat -> nat -> nat = <fun>
+val i2n : int -> nat = <fun>
+val n2i : nat -> int = <fun>
+# n2i (S (S (S Z)));;
+- : int = 3
+# i2n 5;;
+- : nat = S (S (S (S (S Z))))
+# n2i  (add (i2n 3) (i2n 5));;
+- : int = 8
+# n2i  (sub (i2n 3) (i2n 5));;
+- : int = 0
+# n2i  (sub (i2n 5) (i2n 3));;
+- : int = 2
+# n2i  (mul (i2n 5) (i2n 3));;
+- : int = 15
+# n2i  (pow (i2n 5) (i2n 3));;
+- : int = 125
+
+############################################
+##################問２，３##################
+############################################
+preorder,inorder,postorderは再帰を呼びだす順番を変えるだけでうまく行きます。
+
+levelorderは再帰をややこしく使うことで実装できました。levelという再帰関数は'a treeと深さを表す自然数を受け取って、そのtreeからちょうどその深さにある要素をlevelorderのリストで返す関数です。これを要素がなくなる（つまり元の木の最大の深さ）まで呼び出しながら要素をappendしました。append(@)が取り除けませんでした。
+以下の実行例は下の木に対してテストしたものです
+     1
+    / \
+   /   \
+  2     5
+ / \   / \
+3   4 6   9
+     / \
+    7   8
+##########実行例##########
+# #use "q2.ml";;
+type 'a tree = Leaf | Node of 'a * 'a tree * 'a tree
+val a : int tree =
+  Node (1, Node (2, Node (3, Leaf, Leaf), Node (4, Leaf, Leaf)),
+   Node (5, Node (6, Node (7, Leaf, Leaf), Node (8, Leaf, Leaf)),
+    Node (9, Leaf, Leaf)))
+val preorder : 'a tree -> 'a list = <fun>
+val inorder : 'a tree -> 'a list = <fun>
+val postorder : 'a tree -> 'a list = <fun>
+val levelorder : 'a tree -> 'a list = <fun>
+# preorder a;;
+- : int list = [3; 2; 4; 1; 7; 6; 8; 5; 9]
+# inorder a;;
+- : int list = [1; 2; 3; 4; 5; 6; 7; 8; 9]
+# postorder a;;
+- : int list = [3; 4; 2; 7; 8; 6; 9; 5; 1]
+# levelorder a;;
+- : int list = [1; 2; 5; 3; 4; 6; 9; 7; 8]
+
+############################################
+##################問４，５##################
+############################################
+Eval_errorはEval_error of stringの形で定義しました。
+
+
+実行例は以下の文を評価したものです。
+a:
+if 5 < 10 then
+  if true = false then
+    10
+  else
+    5 + 10
+else
+  5
+b:
+if 1+2 then 3 else 4
+##########実行例##########
+# #use "q4.ml";;
+type value = VInt of int | VBool of bool
+type expr =
+    EConstInt of int
+  | EAdd of expr * expr
+  | ESub of expr * expr
+  | EMul of expr * expr
+  | EDiv of expr * expr
+  | EConstBool of bool
+  | EIsEqual of expr * expr
+  | ELess of expr * expr
+  | EIfThenElse of expr * expr * expr
+exception Eval_error of string
+val eval : expr -> value = <fun>
+val a : expr =
+  EIfThenElse (ELess (EConstInt 5, EConstInt 10),
+   EIfThenElse (EIsEqual (EConstBool true, EConstBool false), EConstInt 10,
+    EAdd (EConstInt 5, EConstInt 10)),
+   EConstInt 5)
+val b : expr =
+  EIfThenElse (EAdd (EConstInt 1, EConstInt 2), EConstInt 3, EConstInt 4)
+# eval a;;
+- : value = VInt 15
+# eval b;;
+Exception: Eval_error "IfThenElse".
+
+############################################
+###################発展１###################
+############################################
+type 'a t = Tag of ('a t -> 'a)という再帰ヴァリアントを使って、Z = λf. (λx. f (λy. x x y)) (λx. f (λy. x x y))の型を無理やり合わせるということをやりました。
+
+# #use "adv1.ml";;
+type 'a t = Tag of ('a t -> 'a)
+val fix : (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b = <fun>
+val fact : int -> int = <fun>
+# fact 10;;
+- : int = 3628800
+
+############################################
+###################発展２###################
+############################################
+
+カリーハワード同型によって型と直観主義論理との間の対応がある。またcallccを加えると古典論理と同等になることも知られている。1~3は簡単に示せるが、4,6は古典論理の恒真式なので難しい。5は古典論理でも示すことができない。4,6は証明図を書いて、記号論理での->の除去が関数適用・仮定の解消がclosure(fun式)に対応することを意識することで作れた。同封の画像(four.jpeg,six.jpeg)はM1の原先輩が運用しているipc_bot(twitter.com/ipc_bot)が出力したものを引用しています。
+
+##########実行例##########
+# #use "adv2.ml";;
+type false_t = { t : 'a. 'a; }
+type 'a not_t = 'a -> false_t
+type ('a, 'b) and_t = 'a * 'b
+type ('a, 'b) or_t = L of 'a | R of 'b
+val one : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c = <fun>
+val two : ('a, ('b, 'c) and_t) or_t -> (('a, 'b) or_t, ('a, 'c) or_t) and_t =
+  <fun>
+val three : (('a, 'b) or_t, ('a, 'c) or_t) and_t -> ('a, ('b, 'c) and_t) or_t =
+  <fun>
+val callcc : (('a -> false_t) -> 'a) -> 'a = <fun>
+val four : ('a -> 'c) -> ('a not_t -> 'c) -> 'c = <fun>
+val six : (('a -> 'b) -> 'a) -> 'a = <fun>

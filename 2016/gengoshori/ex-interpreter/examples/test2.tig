@@ -1,0 +1,7 @@
+let var x: int := 1 in
+let function f(n:int):int = (x := x+n; x) in
+let var x: int := 3 in
+   f(1)+f(2)+x
+end
+end
+end

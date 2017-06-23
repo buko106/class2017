@@ -1,0 +1,5 @@
+let var x: int := 1 in
+  let var y:string := "abc\n" in
+    print(y); x+1
+  end
+end

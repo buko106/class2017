@@ -1,0 +1,140 @@
+コンパイラ実験第一回
+
+第一問のプリンタを作りました
+
+編集内容はdiffstat.txtとdiff.txtを見てください
+
+Syntax.print KNormal.printという関数を追加しました。
+どちらも型tの値とネストの深さ(SPACEを出力する数)を受け取る再帰関数です。
+
+今のところmain.ml等は改造してないのでmin-caml.topから呼んでいます
+
+####################実行例####################
+
+tansei:~/sourcecode/compiler/161026/01-161026$./min-caml.top
+        OCaml version 4.01.0
+
+# let string_to_syntax_print s = Syntax.print (Typing.f (Parser.exp Lexer.token (Lexing.from_string s))) 0;;
+val string_to_syntax_print : string -> unit = <fun>
+# let string_to_kNormal_print s = KNormal.print (KNormal.f (Typing.f (Parser.exp Lexer.token (Lexing.from_string s)))) 0;;
+val string_to_kNormal_print : string -> unit = <fun>
+# string_to_syntax_print "let a = Array.create 1 1 in let x = (a.(0)<-100;a.(0)) in let rec sum nnn = let (i,j,k) = nnn in let x = i+j+k in  if k<1 then 0 else k + sum  (0,0,k-1) in (let f =  -2.0 +. 1.5  in  print_int (sum (1,2,x)))";;
+free variable print_int assumed as external
+Let
+  a:Array(Int)
+  Array
+    Int 1
+    Int 1
+  Let
+    x:Int
+    Let
+      Tu1:Unit
+      Put
+        Var a
+        Int 0
+        Int 100
+      Get
+        Var a
+        Int 0
+    LetRec
+      sum:Fun(Tuple( Int Int Int )->Int)
+      nnn:Tuple( Int Int Int ) 
+      LetTuple
+        i:Int j:Int k:Int 
+        Var nnn
+        Let
+          x:Int
+          Add
+            Add
+              Var i
+              Var j
+            Var k
+          If
+            Not
+              LE
+                Int 1
+                Var k
+            Int 0
+            Add
+              Var k
+              App
+                Var sum
+                Tuple 
+                  Int 0
+                  Int 0
+                  Sub
+                    Var k
+                    Int 1
+                endTuple
+      Let
+        f:Float
+        FAdd
+          Float -2.
+          Float 1.5
+        App
+          Var print_int
+          App
+            Var sum
+            Tuple 
+              Int 1
+              Int 2
+              Var x
+            endTuple- : unit = ()
+# string_to_kNormal_print "let a = Array.create 1 1 in let x = (a.(0)<-100;a.(0)) in let rec sum nnn = let (i,j,k) = nnn in let x = i+j+k in  if k<1 then 0 else k + sum  (0,0,k-1) in (let f =  -2.0 +. 1.5  in  print_int (sum (1,2,x)))";;
+free variable print_int assumed as external
+Let a:Array(Int)
+  Let Ti3:Int
+    Int 1
+    Let Ti4:Int
+      Int 1
+      ExtFunApp create_array Ti3 Ti4
+  Let x:Int
+    Let Tu2:Unit
+      Let Ti5:Int
+        Int 0
+        Let Ti6:Int
+          Int 100
+          Put a Ti5 Ti6
+      Let Ti7:Int
+        Int 0
+        Get a Ti7
+    LetRec
+      sum:Fun(Tuple( Int Int Int )->Int)
+      nnn:Tuple( Int Int Int )
+      LetTuple i:Int j:Int k:Int
+        Let x:Int
+          Let Ti14:Int
+            Add i j
+            Add Ti14 k
+          Let Ti15:Int
+            Int 1
+            IfLE Ti15 k
+              Let Ti21:Int
+                Let Tt20:Tuple( Int Int Int )
+                  Let Ti16:Int
+                    Int 0
+                    Let Ti17:Int
+                      Int 0
+                      Let Ti19:Int
+                        Let Ti18:Int
+                          Int 1
+                          Sub k Ti18
+                        Tuple Ti16 Ti17 Ti19
+                  App sum Tt20
+                Add k Ti21
+              Int 0
+      Let f:Float
+        Let Td8:Float
+          Float -2.
+          Let Td9:Float
+            Float 1.5
+            FAdd Td8 Td9
+        Let Ti13:Int
+          Let Tt12:Tuple( Int Int Int )
+            Let Ti10:Int
+              Int 1
+              Let Ti11:Int
+                Int 2
+                Tuple Ti10 Ti11 x
+            App sum Tt12
+          ExtFunApp print_int Ti13- : unit = ()

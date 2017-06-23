@@ -1,0 +1,46 @@
+############################################################
+2-1
+lexer-tab.mlに次の修正を施しました。
+・type token...とoutput_tokenにGEQ GE ELSE TIMESを追加
+・st=1のときの遷移表に >,*.eを読んだ時の遷移先を追加
+・>を読んだ時の遷移先としてst=9を追加
+・elseを受理するための状態としてst=10,11,12を追加
+次のように実行できます
+
+# #use "lexer-report2-1.ml";;
+（中略）
+# main "2>a else if 3>=b then c*d";;
+INT(2) GT ID(a) ELSE IF INT(3) GEQ ID(b) THEN ID(c) TIMES ID(d) - : unit = ()
+
+############################################################
+2-2
+lexer-report2-1.mlに次の修正を施しました。
+・type tokenにCOMMENTを追加
+・大域変数にcomment_depthを追加
+・output_token に| COMMENT -> () を追加
+・コメント内にいるという状態としてst=14を追加
+・st=14の状態でreadcを呼び出すと*,/以外の文字を読み飛ばすように修正
+・st=1の時に/*を読むと1->13->14と遷移してコメントが処理できるようにしました
+・st=14のときに/*を読むとcomment_depthを+1
+・st=14のときに*/を読むとcomment_depthを-1　このときに0になったらtokenとしてCOMMENTを返す。
+・next()を呼び出したときにcomment_depth:=0
+
+# #use "lexer-report2-2.ml";;
+（中略）
+# main "a + b/*comment*/= c";;  (*普通のコメント*)
+ID(a) PLUS ID(b) EQ ID(c) - : unit = () 
+# main "a + b/*a/*nested*/comment*/= c";; (*nested commend*)
+ID(a) PLUS ID(b) EQ ID(c) - : unit = ()
+# main "a + b/****a/////*nes*ted***//com/ment**/= c";;  (*コメントの中や端に*や/が混じっていでも平気*)
+ID(a) PLUS ID(b) EQ ID(c) - : unit = ()
+# main "a + b/*1/*2/*3/*4*/3*/2*/1*/= c";; (*何重でもOK*)
+ID(a) PLUS ID(b) EQ ID(c) - : unit = ()
+# main "a + b/*2/*3*/2*/1*/= c";; (*閉じる*/が多いとエラー*)
+ID(a) PLUS ID(b) INT(1) TIMES invalid token at position20
+- : unit = ()
+# main "a + b/*1/*2/*3*/2*/= c";; (* /*が*/より多いときに配列外参照してしまうのが解消できませんでした*)
+ID(a) PLUS ID(b) Exception: Invalid_argument "index out of bounds".
+
+############################################################
+2-3
+GEQ GT ELSEをtokenとパターンマッチに追加するだけなのでとても楽でした(lexer-report2-3.mllを参照)

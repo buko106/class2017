@@ -1,0 +1,43 @@
+05-161026 平出一郎
+
+########################################
+###############課題A####################
+########################################
+
+./call は第一引数のプログラムを第二引数以降をそのプログラムのコマンドライン引数として呼び出すプログラムです
+
+実行例
+
+ichiro@ubuntu:~/sourcecode/syspro/report6$ make
+gcc -o call call.c -Wall
+gcc -o ish ish.c parse.c print.c -Wall 
+ichiro@ubuntu:~/sourcecode/syspro/report6$ ./call /bin/echo 1
+1
+ichiro@ubuntu:~/sourcecode/syspro/report6$ ./call /usr/bin/wc makefile 
+ 14  35 200 makefile
+
+########################################
+##############課題B~D###################
+########################################
+
+./ish はシェルの機能を提供するプログラムです。配布されたparserを利用しています
+多段のパイプは各プロセスを並列に実行されパイプが詰まらないようになっています。
+exitはプロセスがexitのみからなる時のみishを閉じるようにしました(bashでの挙動に合わせました)
+
+実行例
+
+ichiro@ubuntu:~/sourcecode/syspro/report6$ ./ish
+ish$ /bin/echo 0
+0
+ish$ /usr/bin/wc < /proc/meminfo > out
+ish$ /bin/cat out
+43 125 1198
+ish$ /bin/echo 0 | /usr/bin/wc -c >> out
+ish$ /bin/cat out
+43 125 1198
+2
+ish$ /bin/cat < /proc/meminfo | /bin/cat | /bin/cat | /usr/bin/wc > out
+ish$ /bin/cat out
+     43     125    1198
+ish$ exit
+

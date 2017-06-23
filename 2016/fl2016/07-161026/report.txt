@@ -1,0 +1,82 @@
+fl2016
+第７回レポート 平出一郎 161026
+
+########################################
+##################問１##################
+########################################
+
+{ a = int , b = a -> a }
+Ans.[ a := int , b := int -> int ]
+
+{ int = int -> a }
+Ans.左辺が非関数、右辺が関数なので存在しない
+
+{ int -> int = a -> b }
+Ans.[ a := int , b := int ]
+
+{ a_1 -> a_2 = a_2 -> a_3 , a_3 = b_1 -> b_2 }
+Ans.[ a_1 := b_1 -> b_2 , a_2 := b_1 -> b_2 , a_3 := b_1 -> b_2 ]
+
+{ a -> a = b -> c , c = int -> b }
+Ans.一つ目の式からa=b=cとなり２本目の式でoccurence checkに引っかかるので存在しない。
+
+########################################
+#############問２、３、４################
+########################################
+
+(問２)
+ty_substはスライドの関数を書き下すだけでした。
+
+(問３)
+composeは複雑で型代入（を表現しているリスト）sigma,sigma' から sigma ( sigma' ( a ) ) = t <=>  ty_subst sigma'' (TVar a) 　を満たすリストsigma''を返す必要があってこれはどのように得られるかというと、
+aがTInt,TBoolのときは常に成り立って、
+aがTFun( b , c )のときはb,cに対して上の同値条件が成り立てばよく、
+結局、型変数aに対して上の同値が成り立てばよいのでsigma'での型代入で変化する（すなわち要素に含まれる）型変数各々に対しその合成後の行き先を求めてsigmaに追加してやればよい。このとき同じ型変数に対し２個以上の型代入がリストに含まれてしまうことがあるが、これはunificationの際の合成において
+compose （aが出現しない制約の解） [ (a,t) ]
+という形でしか用いられないので特に処理は施していない。
+
+(問４)
+ty_unifyもスライド通り書き下すだけであるが
+1.occurence check
+2.C[a:=t] （制約集合の型変数aを型tに置換する）
+という処理が必要なのでそれぞれ
+val occur : Syntax.tyvar -> Syntax.ty -> bool = <fun>
+val subst_all :
+  (Syntax.ty * Syntax.ty) list ->
+  Syntax.tyvar -> Syntax.ty -> (Syntax.ty * Syntax.ty) list = <fun>
+という関数を定義した。
+また、処理が施せない時は単一化に失敗するのでFailure "unification error"を投げています。
+
+##########実行例##########
+ichiro@ubuntu:~/sourcecode/fl2016/07-161026$ make
+ichiro@ubuntu:~/sourcecode/fl2016/07-161026$ ocaml
+        OCaml version 4.01.0
+
+# #load "syntax.cmo";;
+# #use "eval.ml";;
+
+（中略）
+
+val ty_subst : Syntax.subst -> Syntax.ty -> Syntax.ty = <fun>
+val compose : Syntax.subst -> Syntax.subst -> Syntax.subst = <fun>
+val occur : Syntax.tyvar -> Syntax.ty -> bool = <fun>
+val subst_all :
+  (Syntax.ty * Syntax.ty) list ->
+  Syntax.tyvar -> Syntax.ty -> (Syntax.ty * Syntax.ty) list = <fun>
+val ty_unify : (Syntax.ty * Syntax.ty) list -> Syntax.subst = <fun>
+
+（中略）
+(* 問１と同じ制約を解いてみる *)
+
+# ty_unify [(TVar 1,TInt);(TVar 2,TFun(TVar 1,TVar 1))];;
+- : Syntax.subst = [(1, TInt); (2, TFun (TInt, TInt))]
+# ty_unify [(TInt,TFun(TInt,TVar 1))];;
+Exception: Failure "unification error".
+# ty_unify [(TFun(TInt,TInt) , TFun(TVar 1,TVar 2))];;
+- : Syntax.subst = [(1, TInt); (2, TInt)]
+# ty_unify [(TFun(TVar 1,TVar 2),TFun(TVar 2,TVar 3));(TVar 3,TFun(TVar (-1),TVar (-2)))];;
+- : Syntax.subst =
+[(1, TFun (TVar (-1), TVar (-2))); (2, TFun (TVar (-1), TVar (-2)));
+ (3, TFun (TVar (-1), TVar (-2)))]
+# ty_unify [(TFun(TVar 1,TVar 1) , TFun(TVar 2,TVar 3));(TVar 3,TFun(TInt,TVar 2))];;
+Exception: Failure "unification error"

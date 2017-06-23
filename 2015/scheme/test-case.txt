@@ -1,0 +1,5 @@
+(load "./scheme2.scm")
+(scheme)
+(load "./scheme2.scm")
+(scheme)
+(lambda () 100)

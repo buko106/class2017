@@ -1,0 +1,47 @@
+ソースコード
+#include<stdio.h>
+
+int main(){
+  int n=100,i=0,sum=0;
+  while(i<n){
+    sum += i;
+    ++i;
+  }
+  return 0;
+}
+
+アセンブリ出力 　　”//”以降に、対応するソースコードの行を記載しました
+
+	.file	"loop.c"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	$100, -4(%rbp)　//n=100
+	movl	$0, -12(%rbp)   //i=0
+	movl	$0, -8(%rbp)    //sum=0
+	jmp	.L2
+.L3:
+	movl	-12(%rbp), %eax  //(iをレジスタに持ってくる)
+	addl	%eax, -8(%rbp)   //sum += i
+	addl	$1, -12(%rbp)    //++i
+.L2:
+	movl	-12(%rbp), %eax  //(iをレジスタに持ってくる)
+	cmpl	-4(%rbp), %eax   //i<n
+	jl	.L3              //(whileの分岐)
+	movl	$0, %eax         //return 0
+	popq	%rbp           
+	.cfi_def_cfa 7, 8       
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 4.8.4-2ubuntu1~14.04.1) 4.8.4"
+	.section	.note.GNU-stack,"",@progbits

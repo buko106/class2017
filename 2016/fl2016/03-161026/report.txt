@@ -1,0 +1,263 @@
+############################################
+####################問１####################
+############################################
+----------例にそって実行ファイルを生成・実行せよ----------
+スライドのとおりにやったらできました
+$$$$$$$$$$$$$$$$$$$$実行例$$$$$$$$$$$$$$$$$$$$
+ichiro:~/sourcecode/fl2016/kadai03$ ocamlc -c strSet.mli
+ichiro:~/sourcecode/fl2016/kadai03$ ocamlc -c strSet.ml
+ichiro:~/sourcecode/fl2016/kadai03$ ocamlc -c sort.ml 
+ichiro:~/sourcecode/fl2016/kadai03$ ocamlc -o sort strSet.cmo sort.cmo
+ichiro:~/sourcecode/fl2016/kadai03$ sort 
+bb  
+dd
+cc
+bb
+cc
+dd
+--------------.cmoをインタプリタで利用せよ---------------
+スライドのとおりにやったらできました
+$$$$$$$$$$$$$$$$$$$$実行例$$$$$$$$$$$$$$$$$$$$
+# #load "strSet.cmo";;
+# let s = ref StrSet.empty;;
+val s : StrSet.t ref = {contents = <abstr>}
+# s := StrSet.add "hoge" !s;;
+- : unit = ()
+# s := StrSet.add "fuga" !s;;
+- : unit = ()
+# s := StrSet.add "foo" !s;;
+- : unit = ()
+# s := StrSet.add "foo" !s;;
+- : unit = ()
+# StrSet.count "hoge" !s;;
+- : int = 1
+# StrSet.count "foo" !s;;
+- : int = 2
+# StrSet.to_ordered_list !s;;
+- : string list = ["foo"; "foo"; "fuga"; "hoge"]
+----------.mli をコンパイルしないとどうなるか-------------
+StrSetのインターフェースの定義が無いのでエラーになる
+$$$$$$$$$$$$$$$$$$$$実行例$$$$$$$$$$$$$$$$$$$$
+ichiro:~/sourcecode/fl2016/kadai03$ rm *.cm*
+ichiro:~/sourcecode/fl2016/kadai03$ ls -F *.cm*
+ls: *.cm* にアクセスできません: そのようなファイルやディレクトリはありません
+ichiro:~/sourcecode/fl2016/kadai03$ ocamlc -c strSet.ml
+File "strSet.ml", line 1:
+Error: Could not find the .cmi file for interface strSet.mli.
+----最後のリンク時にファイルの順番を変えるとどうなるか-----
+StrSetが定義されていないとエラーが出た。
+
+ichiro:~/sourcecode/fl2016/kadai03$ ocamlc -o sort sort.cmo strSet.cmo
+File "_none_", line 1:
+Error: Error while linking sort.cmo:
+Reference to undefined global `StrSet'
+----------------OCamlMakefileを用いてみよ----------------
+Makefileに３行書くだけで勝手に依存関係を判別してコンパイルしてくれた。賢い。
+$$$$$$$$$$$$$$$$$$$$実行例$$$$$$$$$$$$$$$$$$$$
+ichiro:~/sourcecode/fl2016/kadai03$ make bc
+make[1]: ディレクトリ `/home/ichiro/sourcecode/fl2016/kadai03' に入ります
+ocamldep strSet.mli > ._bcdi/strSet.di
+ocamldep sort.ml > ._d/sort.d
+ocamldep strSet.ml > ._d/strSet.d
+make[1]: ディレクトリ `/home/ichiro/sourcecode/fl2016/kadai03' から出ます
+make[1]: ディレクトリ `/home/ichiro/sourcecode/fl2016/kadai03' に入ります
+ocamlc -c strSet.mli
+ocamlc -c strSet.ml
+ocamlc -c sort.ml
+ocamlc \
+				  \
+				               -o sort \
+				strSet.cmo sort.cmo
+make[1]: ディレクトリ `/home/ichiro/sourcecode/fl2016/kadai03' から出ます
+ichiro:~/sourcecode/fl2016/kadai03$ ls -F *.cm*
+sort.cmi  sort.cmo  strSet.cmi  strSet.cmo
+
+############################################
+####################問２####################
+############################################
+シグニチャを満たすStack,Stacksize(サイズを常に持っておく実装)の２通りを作りました。
+##########実行例##########
+# #use "q2.ml";;
+module type STACK =
+  sig
+    type 'a t
+    val empty : 'a t
+    val pop : 'a t -> 'a * 'a t
+    val push : 'a -> 'a t -> 'a t
+    val size : 'a t -> int
+  end
+module Stack : STACK
+module StackSize : STACK
+# open Stack;;
+# let a = empty;;
+val a : 'a Stack.t = <abstr>
+# let a = push 1 a;;
+val a : int Stack.t = <abstr>
+# let a = push 2 a;;
+val a : int Stack.t = <abstr>
+# let a = push 3 a;;
+val a : int Stack.t = <abstr>
+# size a;;
+- : int = 3
+# let (value,a) = pop a;;
+val value : int = 3
+val a : int Stack.t = <abstr>
+# let (value,a) = pop a;;
+val value : int = 2
+val a : int Stack.t = <abstr>
+# let (value,a) = pop a;;
+val value : int = 1
+val a : int Stack.t = <abstr>
+# let (value,a) = pop a;;
+Exception: Failure "Empty".
+
+############################################
+####################問３####################
+############################################
+MULTISET2をシグニチャにもつMultiset2を二分木で実装しました。（平衡とかではありません）
+##########実行例##########
+# #use "q3.ml";;
+（中略）
+# open StringMultiset;;
+# let a = empty;;
+val a : StringMultiset.t = <abstr>
+# let a = add "hoge" a ;;
+val a : StringMultiset.t = <abstr>
+# let a = add "fuga" a ;;
+val a : StringMultiset.t = <abstr>
+# let a = add "hoge" a ;;
+val a : StringMultiset.t = <abstr>
+# count "hoge" a;;
+- : int = 2
+# count "fuga" a;;
+- : int = 1
+# let a = remove "hoge" a ;;
+val a : StringMultiset.t = <abstr>
+# let a = remove "fuga" a ;;
+val a : StringMultiset.t = <abstr>
+# count "hoge" a;;
+- : int = 1
+# count "fuga" a;;
+- : int = 0
+
+############################################
+####################問４####################
+############################################
+ORDERED_TYPEのシグニチャを持つ値をキーとして任意の型の値を格納する連想配列を、キーと値のペアのリストとして実装しました。昇順に並んでいるので、適当に並べるよりlookupは定数倍早いですがaddはO(n)で余計に時間がかかります。平衡２分木が最適だと思います。
+##########実行例##########
+# #use "q4.ml";;
+（中略）
+module StringAssoc :
+  sig
+    type 'a t = 'a Assoc(OrderedString).t
+    val empty : 'a t
+    val add : 'a t -> OrderedString.t -> 'a -> 'a t
+    val remove : 'a t -> OrderedString.t -> 'a t * 'a option
+    val lookup : 'a t -> OrderedString.t -> 'a option
+    val to_ordered_list : 'a t -> (OrderedString.t * 'a) list
+  end
+# open StringAssoc;;
+# let a = empty;;
+val a : 'a StringAssoc.t = <abstr>
+# let a = add a "hoge" "fuga";;
+val a : string StringAssoc.t = <abstr>
+# let a = add a "yama" "kawa";;
+val a : string StringAssoc.t = <abstr>
+# to_ordered_list a;;
+- : (OrderedString.t * string) list = [("hoge", "fuga"); ("yama", "kawa")]
+# let (a,result) = remove a "yama";;
+val a : string StringAssoc.t = <abstr>
+val result : string option = Some "kawa"
+# lookup a "yama";;
+- : string option = None
+
+############################################
+####################問５####################
+############################################
+まずは下のシグニチャをもつファンクタMatrixを作りました。
+module type MATRIX =
+  functor (SemiRing : SEMIRING) ->
+    sig
+      type t
+      val init : int -> int -> (int -> int -> SemiRing.t) -> t
+      val of_list : SemiRing.t list list -> t
+      val to_list : t -> SemiRing.t list list
+      val at : t -> int -> int -> SemiRing.t
+      val unit : int -> t
+      val zero : int -> int -> t
+      val add : t -> t -> t
+      val mul : t -> t -> t
+      val pow : t -> int -> t
+    end
+
+これを利用し
+IntModMatrix : 整数の mod 1000000007
+BoolMatrix : 真偽値(add = または,mul = かつ)
+MinPlusMatrix : 整数及び無限大(add = 最小値,mul = 足し算)
+の３つを作りました。
+
+IntModMatrixを使ってフィボナッチ数列のn番目のmod1000000007を求めました。naiveな実装だとO(n)ですが、
+(1 1)
+(1 0)
+の累乗を効率的に計算することによってO(log n)になります。
+
+BoolMatrixを（有限集合の上の）２項関係のreflexive transitive closureを計算しました。２項関係を行列で表現したものをr,集合の元の数をnとすると (r+unit)^nでもとまると思います。これは次のMinPlus半環の特殊な場合になってると思います。
+
+MinPlusMatrixを用いて有向グラフ(sample.png)上の最短距離を計算しました。計算法はスライドの54枚目に準じました。
+
+##########実行例##########
+# #use "q5.ml";;
+（中略）
+val fib : int -> IntMod.t = <fun>
+val fib_naive : int -> int = <fun>
+val ans : IntMod.t = 908460138
+val ans_naive : int = 908460138
+val r : BoolMatrix.t = <abstr>
+- : Bool.t list list =
+[[true; false; false; true]; [true; false; false; false];
+ [false; true; false; false]; [false; true; false; false]]
+val reflexive_transitive_closure_of_r : Bool.t list list =
+  [[true; true; false; true]; [true; true; false; true];
+   [true; true; true; true]; [true; true; false; true]]
+val dist : MinPlusMatrix.t = <abstr>
+val solve : MinPlus.t list list =
+  [[Int 0; Int 10; Inf; Int 100]; [Int 1005; Int 0; Inf; Int 1000];
+   [Int 1006; Int 1; Int 0; Int 1001]; [Int 5; Int 15; Inf; Int 0]]
+
+
+############################################
+###################発展１###################
+############################################
+式の型検査の時点で型の整合のとれた式が入力されることが保証されているので、evalの中では不正な型の式に対してはエラーを返すのではなく、適当な値を返しても大丈夫なはずなのでそのようにしました
+
+下の実行例は以下の式eを評価したものです
+if 1<(2+3) then
+  if 4 = 4 then
+    true
+  else
+    false
+else
+  false
+
+##########実行例##########
+# #use "adv1.ml";;
+（中略）
+type 'a expr =
+    EConstInt of (int, 'a) Eq.equal * int
+  | EConstBool of (bool, 'a) Eq.equal * bool
+  | EAdd of (int, 'a) Eq.equal * int expr * int expr
+  | ESub of (int, 'a) Eq.equal * int expr * int expr
+  | EMul of (int, 'a) Eq.equal * int expr * int expr
+  | EDiv of (int, 'a) Eq.equal * int expr * int expr
+  | EIf of bool expr * 'a expr * 'a expr
+  | EEq of (bool, 'a) Eq.equal * int expr * int expr
+  | ELess of (bool, 'a) Eq.equal * int expr * int expr
+val eval : 'a expr -> 'a value = <fun>
+val e : bool expr =
+  EIf
+   (ELess (<abstr>, EConstInt (<abstr>, 1),
+     EAdd (<abstr>, EConstInt (<abstr>, 2), EConstInt (<abstr>, 3))),
+   EIf (EEq (<abstr>, EConstInt (<abstr>, 4), EConstInt (<abstr>, 4)),
+    EConstBool (<abstr>, true), EConstBool (<abstr>, false)),
+   EConstBool (<abstr>, false))
+- : bool value = VBool (<abstr>, true)

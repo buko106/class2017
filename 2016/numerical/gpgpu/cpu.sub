@@ -1,0 +1,8 @@
+universe = parallel
+executable = /home/i_hiraide/sourcecode/numerical/gpgpu/cpu
+log = cpu.log
+output = cpu.out
+error = cpu.err
+machine_count = 1
+request_cpus = 1
+queue

@@ -1,0 +1,49 @@
+コマンドライン引数から読み込んだファイルSOURCEとDESTをopenし、一度に（最大）512byteをSOURCEからreadで読み込み、DESTにwriteするコピーのプログラムを作成した。
+
+コピーするファイルは前回課題で使用した1.pdf(1.3MB)とした。
+実行例でdiffがないこと、パーミッションが一致することが確認できる。
+
+また1MBのディスク領域を確保してコピーしたところエラー表示もきちんとなされた。
+
+####################実行例####################
+~/sourcecode/syspro/report2/kadai-b$ make
+gcc -Wall -o mycp mycp.c
+~/sourcecode/syspro/report2/kadai-b$ ./mycp 1.pdf copy.pdf
+~/sourcecode/syspro/report2/kadai-b$ diff 1.pdf copy.pdf 
+~/sourcecode/syspro/report2/kadai-b$ ls -l
+合計 2484
+-rw-rw-r-- 1 ichiro ichiro     338  4月 27 14:40 #report.txt#
+-rw-rw-r-- 1 ichiro ichiro 1256358  4月 26 17:12 1.pdf
+-rw-rw-r-- 1 ichiro ichiro 1256358  4月 27 14:48 copy.pdf
+-rw-rw-r-- 1 ichiro ichiro      79  4月 25 17:12 makefile
+-rwxrwxr-x 1 ichiro ichiro    9032  4月 27 14:48 mycp
+-rw-rw-r-- 1 ichiro ichiro    1350  4月 27 14:48 mycp.c
+-rw-rw-r-- 1 ichiro ichiro    1270  4月 26 17:23 mycp.c~
+ichiro@ichiro-Latitude-E5410:~/sourcecode/syspro/report2/kadai-b$ chmod ug-w 1.pdf 
+~/sourcecode/syspro/report2/kadai-b$ ./mycp 1.pdf copy.pdf
+~/sourcecode/syspro/report2/kadai-b$ ls -l
+合計 2484
+-rw-rw-r-- 1 ichiro ichiro     338  4月 27 14:40 #report.txt#
+-r--r--r-- 1 ichiro ichiro 1256358  4月 26 17:12 1.pdf
+-r--r--r-- 1 ichiro ichiro 1256358  4月 27 14:49 copy.pdf
+-rw-rw-r-- 1 ichiro ichiro      79  4月 25 17:12 makefile
+-rwxrwxr-x 1 ichiro ichiro    9032  4月 27 14:48 mycp
+-rw-rw-r-- 1 ichiro ichiro    1350  4月 27 14:48 mycp.c
+-rw-rw-r-- 1 ichiro ichiro    1270  4月 26 17:23 mycp.c~
+
+####################エラー出力の実行例####################
+~/sourcecode/syspro/report2/kadai-b$ dd if=/dev/zero of=fsfile bs=1024 count=1024
+1024+0 レコード入力
+1024+0 レコード出力
+1048576 バイト (1.0 MB) コピーされました、 0.00508686 秒、 206 MB/秒
+~/sourcecode/syspro/report2/kadai-b$ mke2fs -F fsfile
+mke2fs 1.42.9 (4-Feb-2014)
+（中略）
+Allocating group tables: done                            
+Writing inode tables: done                            
+Writing superblocks and filesystem accounting information: done
+
+~/sourcecode/syspro/report2/kadai-b$ sudo mount -o loop fsfile /mnt
+~/sourcecode/syspro/report2/kadai-b$ sudo ./mycp 1.pdf /mnt/copy.pdf
+write: No space left on device
+

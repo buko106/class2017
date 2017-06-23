@@ -1,0 +1,112 @@
+diff -Nru original/linux-2.6.34.14/arch/x86/include/asm/unistd_32.h linux-2.6.34.14/arch/x86/include/asm/unistd_32.h
+--- original/linux-2.6.34.14/arch/x86/include/asm/unistd_32.h	2013-01-17 06:55:31.000000000 +0900
++++ linux-2.6.34.14/arch/x86/include/asm/unistd_32.h	2016-07-28 17:08:49.445631290 +0900
+@@ -343,10 +343,11 @@
+ #define __NR_rt_tgsigqueueinfo	335
+ #define __NR_perf_event_open	336
+ #define __NR_recvmmsg		337
++#define __NR_flip               338
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 338
++#define NR_syscalls 339
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+diff -Nru original/linux-2.6.34.14/arch/x86/include/asm/unistd_64.h linux-2.6.34.14/arch/x86/include/asm/unistd_64.h
+--- original/linux-2.6.34.14/arch/x86/include/asm/unistd_64.h	2013-01-17 06:55:31.000000000 +0900
++++ linux-2.6.34.14/arch/x86/include/asm/unistd_64.h	2016-07-28 17:10:01.517631577 +0900
+@@ -663,6 +663,8 @@
+ __SYSCALL(__NR_perf_event_open, sys_perf_event_open)
+ #define __NR_recvmmsg				299
+ __SYSCALL(__NR_recvmmsg, sys_recvmmsg)
++#define __NR_flip                               300
++__SYSCALL(__NR_flip, sys_flip)
+ 
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
+diff -Nru original/linux-2.6.34.14/arch/x86/kernel/Makefile linux-2.6.34.14/arch/x86/kernel/Makefile
+--- original/linux-2.6.34.14/arch/x86/kernel/Makefile	2013-01-17 06:55:31.000000000 +0900
++++ linux-2.6.34.14/arch/x86/kernel/Makefile	2016-07-28 17:40:41.305638882 +0900
+@@ -35,6 +35,7 @@
+ obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+ obj-y			+= time.o ioport.o ldt.o dumpstack.o
+ obj-y			+= setup.o x86_init.o i8259.o irqinit.o
++obj-y                   += flip.o
+ obj-$(CONFIG_X86_VISWS)	+= visws_quirks.o
+ obj-$(CONFIG_X86_32)	+= probe_roms_32.o
+ obj-$(CONFIG_X86_32)	+= sys_i386_32.o i386_ksyms_32.o
+diff -Nru original/linux-2.6.34.14/arch/x86/kernel/flip.c linux-2.6.34.14/arch/x86/kernel/flip.c
+--- original/linux-2.6.34.14/arch/x86/kernel/flip.c	1970-01-01 09:00:00.000000000 +0900
++++ linux-2.6.34.14/arch/x86/kernel/flip.c	2016-07-28 17:56:00.201642530 +0900
+@@ -0,0 +1,35 @@
++#include<linux/syscalls.h>
++#include<linux/errno.h>
++#include<linux/slab.h>
++#include<asm/uaccess.h>
++
++SYSCALL_DEFINE2(flip, char *, p , int , len){
++  char *buf1;
++  char *buf2;
++  int i;
++  if(!p)
++    return -EINVAL;
++  if( len < 0 )
++    return -EINVAL;
++  
++  buf1 = kmalloc(len,GFP_KERNEL);
++  if(!buf1)
++    return -ENOMEM;
++  buf2 = kmalloc(len,GFP_KERNEL);
++  if(!buf2)
++    return -ENOMEM;
++
++  if(copy_from_user(buf1,p,len))
++    return -EFAULT;
++
++  for( i=0 ; i<len ; ++i)
++    buf2[i] = buf1[len-i-1];
++
++  if(copy_to_user(p,buf2,len))
++    return -EFAULT;
++  
++  kfree(buf1);
++  kfree(buf2);
++  
++  return len;
++}
+diff -Nru original/linux-2.6.34.14/arch/x86/kernel/syscall_table_32.S linux-2.6.34.14/arch/x86/kernel/syscall_table_32.S
+--- original/linux-2.6.34.14/arch/x86/kernel/syscall_table_32.S	2013-01-17 06:55:31.000000000 +0900
++++ linux-2.6.34.14/arch/x86/kernel/syscall_table_32.S	2016-07-28 17:11:22.453631898 +0900
+@@ -337,3 +337,4 @@
+ 	.long sys_rt_tgsigqueueinfo	/* 335 */
+ 	.long sys_perf_event_open
+ 	.long sys_recvmmsg
++        .long sys_flip
+diff -Nru original/linux-2.6.34.14/include/asm-generic/unistd.h linux-2.6.34.14/include/asm-generic/unistd.h
+--- original/linux-2.6.34.14/include/asm-generic/unistd.h	2013-01-17 06:55:31.000000000 +0900
++++ linux-2.6.34.14/include/asm-generic/unistd.h	2016-07-28 17:12:57.105632274 +0900
+@@ -626,9 +626,11 @@
+ __SYSCALL(__NR_accept4, sys_accept4)
+ #define __NR_recvmmsg 243
+ __SYSCALL(__NR_recvmmsg, sys_recvmmsg)
++#define __NR_flip 244
++__SYSCALL(__NR_flip, sys_flip)
+ 
+ #undef __NR_syscalls
+-#define __NR_syscalls 244
++#define __NR_syscalls 245
+ 
+ /*
+  * All syscalls below here should go away really,
+diff -Nru original/linux-2.6.34.14/include/linux/syscalls.h linux-2.6.34.14/include/linux/syscalls.h
+--- original/linux-2.6.34.14/include/linux/syscalls.h	2013-01-17 06:55:31.000000000 +0900
++++ linux-2.6.34.14/include/linux/syscalls.h	2016-07-28 17:16:29.321633116 +0900
+@@ -847,4 +847,6 @@
+ 			unsigned long fd, unsigned long pgoff);
+ asmlinkage long sys_old_mmap(struct mmap_arg_struct __user *arg);
+ 
++asmlinkage long sys_flip(char *p, int len);
++
+ #endif

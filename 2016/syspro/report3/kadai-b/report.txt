@@ -1,0 +1,113 @@
+bounded bufferに２０個のプロセスがbb_putとbb_getを同期しながら行うプログラムを作りました。consumer[i],producer[i]が各々結果をprintfで表示するようにしました。入れた要素と出てくる要素が過不足ないことを確認しました。printfの表示順がでたらめなのはconsumer,producerの中ではロックしてためです。
+
+凡例
+producer[i] -> bb_put[i](val)
+consumer[i] -> bb_get[i]() -> val
+####################実行例####################
+ichiro:~/sourcecode/syspro/report3/kadai-b$ gcc bb.c -o bb -Wall -pthread
+ichiro:~/sourcecode/syspro/report3/kadai-b$ ./bb
+bb_put[0](0)
+bb_get[0]() -> 0
+bb_put[1](5)
+bb_get[1]() -> 5
+bb_put[2](10)
+bb_put[2](11)
+bb_put[3](15)
+bb_put[3](16)
+bb_put[4](20)
+bb_get[5]() -> 20
+bb_get[5]() -> 16
+bb_get[5]() -> 12
+bb_get[5]() -> 17
+bb_get[5]() -> 21
+bb_get[3]() -> 30
+bb_get[7]() -> 1
+bb_get[7]() -> 6
+bb_put[8](40)
+bb_put[8](41)
+bb_get[8]() -> 40
+bb_get[2]() -> 10
+bb_get[9]() -> 11
+bb_put[9](45)
+bb_put[9](46)
+bb_put[9](47)
+bb_put[9](48)
+bb_put[9](49)
+bb_put[3](17)
+bb_put[6](30)
+bb_put[4](21)
+bb_put[0](1)
+bb_put[1](6)
+bb_put[7](35)
+bb_get[7]() -> 41
+bb_get[4]() -> 35
+bb_put[8](42)
+bb_get[3]() -> 42
+bb_get[0]() -> 45
+bb_get[3]() -> 31
+bb_get[1]() -> 15
+bb_get[2]() -> 47
+bb_get[2]() -> 36
+bb_get[2]() -> 43
+bb_get[6]() -> 25
+bb_get[7]() -> 49
+bb_put[3](18)
+bb_put[3](19)
+bb_put[6](31)
+bb_put[6](32)
+bb_get[8]() -> 46
+bb_get[0]() -> 22
+bb_put[0](2)
+bb_get[3]() -> 2
+bb_put[1](7)
+bb_put[1](8)
+bb_put[1](9)
+bb_put[2](12)
+bb_put[2](13)
+bb_get[9]() -> 48
+bb_get[4]() -> 18
+bb_get[4]() -> 14
+bb_put[4](22)
+bb_get[6]() -> 32
+bb_get[6]() -> 23
+bb_get[7]() -> 33
+bb_put[0](3)
+bb_get[8]() -> 3
+bb_get[1]() -> 7
+bb_get[0]() -> 8
+bb_put[7](36)
+bb_get[3]() -> 9
+bb_put[8](43)
+bb_put[8](44)
+bb_put[2](14)
+bb_get[2]() -> 19
+bb_put[4](23)
+bb_put[4](24)
+bb_put[0](4)
+bb_get[6]() -> 4
+bb_put[7](37)
+bb_put[7](38)
+bb_get[4]() -> 37
+bb_get[8]() -> 44
+bb_get[4]() -> 38
+bb_put[6](33)
+bb_put[6](34)
+bb_put[7](39)
+bb_get[6]() -> 39
+bb_get[9]() -> 13
+bb_get[1]() -> 24
+bb_get[0]() -> 34
+bb_put[5](25)
+bb_put[5](26)
+bb_get[8]() -> 26
+bb_put[5](27)
+bb_get[9]() -> 27
+bb_put[5](28)
+bb_put[5](29)
+bb_get[1]() -> 28
+bb_get[9]() -> 29
+bb_count=0
+bb_in=0
+bb_out=0
+bb_wait_put=0
+bb_wait_get=0

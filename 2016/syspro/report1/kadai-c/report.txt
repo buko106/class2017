@@ -1,0 +1,2 @@
+実行例
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-c$ chmod u+x c.sh; ./c.sh

@@ -1,0 +1,268 @@
+関数・論理型第９回レポート
+05-161026 平出一郎
+
+問１〜３のインタプリタが./q1
+問４のインタプリタが./q4
+発展１のインタプリタが./adv1
+発展２のインタプリタが./adv2
+にあります。makeでビルドしてください。
+
+########################################
+#############問１〜３###################
+########################################
+
+（問１）値、型の拡張とパターンの定義はスライドと同一です。
+（問２）match式の評価はスライドのとおりにfind_matchの中で変数と束縛した値のペアを列挙してあとで環境に追加できるようにしました。マッチしたパターンとそれとセットの式を列挙して先頭のものだけを取り出し評価しました。先頭が存在しない時はmatch failureです。
+（問３）match式の推論はスライドのとおりにパターンを推論したときの結果として、制約に加えて変数名と束縛するであろう値の型のペアを返しているので、"->"以降の各式の型推論がうまく行くという感じです。
+ty_unify,get_type_vars,ty_substなどの拡張もしました。（これは簡単でした）
+
+#####実行例#####
+
+# let rec length xs = match xs with []-> 0 |x::xs -> length xs + 1;;
+val length : 'a.('a list -> int) = <fun>
+# length [1;2;3];;
+- : int = 3
+# let rec append xs ys = match xs with [] -> ys | hd::tl -> hd :: append tl ys;;
+val append : 'a.('a list -> 'a list -> 'a list) = <fun>
+# append [1;2;3] [4];;
+- : int list = [1;2;3;4]
+# let rec filter f xs = match xs with | [] -> [] | hd::tl -> if f hd then hd :: filter f tl else filter f tl;;
+val filter : 'a.(('a -> bool) -> 'a list -> 'a list) = <fun>
+# filter (fun x -> x < 10) [0;5;10;15];;
+- : int list = [0;5]
+# let rec fold_left f e xs = match xs with [] -> e | hd::tl -> fold_left f (f e hd) tl;;
+val fold_left : 'a.'b.(('b -> 'a -> 'b) -> 'b -> 'a list -> 'b) = <fun>
+# fold_left (fun x y -> x*2 + y) 0 [1;2;3;4];;
+- : int = 26
+
+
+########################################
+#################問４###################
+########################################
+
+環境の型を次のようにしました。
+...
+and env = (name * thunk) list
+and thunk = Thunk of expr * env ref
+環境の参照になっているのは、ELetRecが自分自身をexprとして参照できるようにしたかったからです。
+let rec f xを環境に束縛するときにfが持つサンクの中にある環境へのリファレンスの中に自分がいるようにループを作りました。
+
+#trace true;; とすることで変数に値を束縛するときに表示するようにしました。
+
+#####実行例#####
+
+# let rec fix f = f (fix f);;
+val fix : 'a.(('a -> 'a) -> 'a) = <fun>
+# let fib n = let fib_sub f n = if n<2 then n else f (n-1) + f (n-2) in fix fib_sub n;;
+val fib : int -> int = <fun>
+# fib 10;;
+- : int = 55
+# #trace true;;
+# (fun x y -> x*y*x*y) (1 + 2) (2 * 3);;
+bind x=3
+bind y=6
+bind x=3
+bind y=6
+- : int = 324
+# (fun x y -> x*x)  (1 + 2) (3/0);; (*0除算が評価されていない*)
+bind x=3
+bind x=3
+- : int = 9
+# (fun x -> (fun y -> x*y) x) (2+3);;
+bind x=5
+bind x=5
+bind y=5
+- : int = 25
+
+########################################
+################発展１##################
+########################################
+
+環境の型を次のようにしました。
+...
+and env = (name * dval ref) list
+and dval = DThunk of thunk | DVal of value
+and thunk = expr * env ref
+環境の参照になっているのは、ELetRecが自分自身をexprとして参照できるようにしたかったからです。
+let rec f xを環境に束縛するときにfが持つサンクの中にある環境へのリファレンスの中に自分がいるようにループを作りました。
+変数に値を束縛するときに未評価(DThunk)ならDValに書き換えるようにしました。
+
+#trace true;; とすることで変数に値を束縛するときに表示するようにしました。
+match文も実装しました。
+
+#####実行例#####
+
+# let rec fix f = f (fix f);;
+val fix : 'a.(('a -> 'a) -> 'a) = <fun>
+# let fib n = let fib_sub f n = if n<2 then n else f (n-1) + f (n-2) in fix fib_sub n;;
+val fib : int -> int = <fun>
+# fib 10;;
+- : int = 55
+# #trace true;;
+# (fun x y -> x*y*x*y) (1 + 2) (2 * 3);;
+bind x=3
+bind y=6
+- : int = 324
+# (fun x y -> x*x)  (1 + 2) (3/0);;
+bind x=3
+- : int = 9
+# (fun x -> (fun y -> x*y) x) (2+3);;
+bind x=5
+bind y=5
+- : int = 25
+# let rec length xs = match xs with [] -> 0 | hd::tl -> length tl + 1;;
+bind length=<fun>
+val length : 'a.('a list -> int) = <fun>
+# length [true;true;false];;
+bind xs=[true;true;false]
+bind xs=[true;false]
+bind xs=[false]
+bind xs=[]
+- : int = 3
+
+########################################
+################発展 2##################
+########################################
+問３までのインタプリタ（値呼び）に次の拡張をしました。
+
+・参照
+! , := , ref
+
+・Unit型
+()
+
+・ループ処理
+while expr do expr done
+for var = expr to expr do expr done
+
+・exprの連接
+;
+
+・ワイルドカード
+_
+
+・リストの略記法　
+[ ; ;...]
+
+############################################################
+・参照
+! , := , ref
+
+・Unit型
+()
+
+
+表現として
+  | EUnit
+  | EAssign    of expr * expr
+  | EGet       of expr
+型として
+  | TUnit
+  | TRef of ty
+値として
+  | VUnit
+  | VMakeRef
+  | VRef  of value ref
+を追加しました。
+VMakeRefは最初に環境に入っているプリミティブ関数としてのrefのための値です。
+値制限をつけてないので型安全では無いです。
+
+#####実行例#####
+# let a = ref 1;;
+val a : int ref = {contents = 1}
+# a := !a + !a + !a ;;
+- : unit = ()
+# a := !a + !a + !a ;;
+- : unit = ()
+# a;;
+- : int ref = {contents = 9}
+# !a;;
+- : int = 9
+# let b = a:=0;;
+val b : unit = ()
+# a;;
+- : int ref = {contents = 0}
+# b;;
+- : unit = ()
+# ref;;
+- : 'a.('a -> 'a ref) = <fun>
+# let id_ref = ref (fun x->x);;
+val id_ref : 'a.(('a -> 'a) ref) = {contents = <fun>}
+# id_ref := (fun x->x+1);;
+- : unit = ()
+# !id_ref;;
+- : 'a.('a -> 'a) = <fun>   (* 参照が多相なので実行時エラーを起こせる *)
+# !id_ref true;;
+Error: EvalErr("int value was expected in '+'")
+
+############################################################
+
+・ループ処理
+while expr do expr done
+for var = expr to expr do expr done
+
+・exprの連接
+;
+
+ループ処理と文の連接を実装しました。
+
+表現として
+  | EWhile     of expr * expr
+  | EFor       of name * expr * expr * expr
+  | ESeq       of expr * expr
+を追加しました。
+
+while,forはOCamlと同一です（がdo,doneの間がUnitでなくてもOK）
+ e1;e2;...; en はe1,e2...を評価したあとenの評価値を返します。
+
+#####実行例#####
+# let fact n =
+    let i = ref 1 in
+    let fn= ref 1 in
+    while !i < n+1 do
+      fn := !fn * !i;
+      i  := !i + 1
+    done;
+    !fn;;
+val fact : int -> int = <fun>
+# fact 0;;
+- : int = 1
+# fact 1;;
+- : int = 1
+# fact 10;;
+- : int = 3628800
+# let fact n =
+    let fn = ref 1 in
+    for i=1 to n do
+      fn := i * !fn
+    done;!fn;;
+val fact : int -> int = <fun>
+# fact 10;;
+- : int = 3628800
+
+############################################################
+・ワイルドカード
+_
+
+
+・リストの略記法　
+[ ; ;...]
+
+まず let _ = e1 in e2 は e1 ; e2 と等価にしました。（本当はlet _ = e1;;が変わった挙動をするのですが今回は無視しました。）
+
+パターンマッチではtype patternにPWildcardというのを追加し、変数の束縛なし型制約なしという感じでマッチするようにしました。
+
+OCamlと同じリスト略記法をサポートしました。ENilやEConsにパーサで展開しています。
+
+# let rec length xs = match xs with [] -> 0 | _::xs -> length xs + 1;;
+val length : 'a.('a list -> int) = <fun>
+# length [1;2;3;4];;
+- : int = 4
+# length [];;
+- : int = 0
+# let is_empty xs = match xs with _::_ -> false | _ -> true;;
+val is_empty : 'a.('a list -> bool) = <fun>
+# is_empty [];;
+- : bool = true
+# is_empty [fun x->x];;
+- : bool = false

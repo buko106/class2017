@@ -1,0 +1,18 @@
+let
+  var x: int := 1
+in
+  let function f(y: string):int = 
+   (x;   /* x:int */
+    let 
+      var x: string := "abc"
+    in
+      f(x)   /* x:string */
+   end)
+  in
+    x := x;   /* x: int */
+    f("abc")  
+  end;
+x := x  /* x:int */
+end
+
+

@@ -1,0 +1,30 @@
+コマンド
+strace /bin/cat /proc/meminfo > cat_only.txt
+strace /bin/cat /proc/meminfo 2> strace_only.txt
+strace /bin/cat /proc/meminfo &> both.txt
+
+実行例
+
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-e$ strace /bin/cat /proc/meminfo > cat_only.txt
+execve("/bin/cat", ["/bin/cat", "/proc/meminfo"], [/* 61 vars */]) = 0
+brk(0)                                  = 0x1b9a000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7faf23e3d000
+--------------------（中略）--------------------
+read(3, "MemTotal:        3843232 kB\nMemF"..., 65536) = 1170
+write(1, "MemTotal:        3843232 kB\nMemF"..., 1170) = 1170
+read(3, "", 65536)                      = 0
+close(3)                                = 0
+close(1)                                = 0
+close(2)                                = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-e$ strace /bin/cat /proc/meminfo 2> strace_only.txt
+MemTotal:        3843232 kB
+MemFree:         2175228 kB
+--------------------（中略）--------------------
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:       67964 kB
+DirectMap2M:     3919872 kB
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-e$ strace /bin/cat /proc/meminfo &> both.txt

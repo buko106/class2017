@@ -1,0 +1,9 @@
+universe = parallel
+executable = /home/i_hiraide/sourcecode/numerical/gpgpu/gpgpu
+log = gpgpu.log
+output = gpgpu.out
+error = gpgpu.err
+machine_count = 1
+request_cpus = 1
+request_gpus = 1
+queue

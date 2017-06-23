@@ -1,0 +1,82 @@
+コンパイラ実験第二回レポート
+05-161026平出一郎
+
+##########第一問##########
+問一はq1.mlを見てください。
+変数のスコープに注意してxに適切な添字をつけて,途中の計算にはt_nと添字付きの臨時の変数を用意しました。
+
+A変換ではalpha変換後の式のネストされたletを展開しました。
+
+##########第二問##########
+次のようなときに共通部分式削除を行うようにしました。
+
+let x = e1 in e2となっていたら
+e1に副作用がないときにe2の中のe1が現れをVar(x)に置き換えられるが、そのe1の現れの経路の途中に副作用のある式があれば置き換えない。
+
+副作用があるかは決定不能なのでElim.effectと同様に、配列の書き換えまたは関数呼び出しが含まれる式を副作用を持つ式としました。
+
+
+最適化関数(iter)が終了するときにKNormal.tの式を出力するようにしました。
+共通部分式除去はデフォルトでoffになっています。./min-caml -cse とするとiterのなかでCse.fが呼ばれるようになります。
+
+q2.mlのコンパイル結果を実装の有無で比較しました。
+
+-----q2.mlの変換例-----
+
+(* 共通部分式除去前 *)
+LetRec
+  id.5:Fun(Int->Int)
+  x.6:Int
+  LetRec
+    id.9:Fun(Int->Int)
+    x.10:Int
+    LetRec
+      id.11:Fun(Int->Int)
+      x.12:Int
+      Let y.13:Int
+        Add x.12 x.12
+        Let z.14:Int
+          Add x.12 x.12
+          Let Ti3.16:Int
+            Add x.12 x.12
+            Let Ti4.15:Int
+              Add y.13 Ti3.16
+              Add Ti4.15 z.14
+      App id.11 x.10
+    App id.9 x.6
+  Let Ti1.8:Int
+    Int 2
+    Let Ti2.7:Int
+      App id.5 Ti1.8
+
+(* 共通部分式除去後 *)
+LetRec
+  id.5:Fun(Int->Int)
+  x.6:Int
+  LetRec
+    id.9:Fun(Int->Int)
+    x.10:Int
+    LetRec
+      id.11:Fun(Int->Int)
+      x.12:Int
+      Let y.13:Int
+        Add x.12 x.12
+        Let Ti4.15:Int
+          Add y.13 y.13
+          Add Ti4.15 y.13
+      App id.11 x.10
+    App id.9 x.6
+  Let Ti1.8:Int
+    Int 2
+    Let Ti2.7:Int
+      App id.5 Ti1.8
+
+
+このように
+      let y = x + x in
+      let z = x + x in
+      y + (x + x) + z
+が
+      let y = x + x in
+      (y + y) + y
+に置き換えられたことが確認できました。

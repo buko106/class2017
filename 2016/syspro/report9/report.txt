@@ -1,0 +1,38 @@
+システムプログラミング実験課題９
+05-161026 平出一郎
+
+編集及び追加したファイルは以下の通りです。
+
+tansei:~/sourcecode/syspro/report9$ diffstat kadai-b.patch 
+ arch/x86/include/asm/unistd_32.h   |    3 ++-
+ arch/x86/include/asm/unistd_64.h   |    2 ++
+ arch/x86/kernel/Makefile           |    1 +
+ arch/x86/kernel/flip.c             |   35 +++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/syscall_table_32.S |    1 +
+ include/asm-generic/unistd.h       |    4 +++-
+ include/linux/syscalls.h           |    2 ++
+ 7 files changed, 46 insertions(+), 2 deletions(-)
+
+flipシステムコールの返り値はシステムコール内でエラーが発生した場合は負の値、それ以外は処理したバイト数を返すようにしました。ライブラリのsyscall関数はunistd_64.hを参照してアセンブリ言語上でのシステムコールの番号を調べているようなのでそれも追記しました。
+
+特に、以下のサイトを参考にしました。
+http://kernhack.hatenablog.com/entry/20100314/1268573016
+
+動作確認には以下のコードを用いました。
+
+#include<stdio.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/syscall.h>
+
+#define FLIP 300
+
+int main(){
+    char a[100] = "Hello";
+    int ret = syscall(FLIP,a,strlen(a));
+    printf("%d:%s\n",ret,a);
+    return 0;
+}
+
+出力
+5:olleH

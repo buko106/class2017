@@ -1,0 +1,62 @@
+TCPによるechoサーバーをマルチスレッドとselect()の２通りで制作しました。
+
+マルチスレッドでは取り扱える最大のスレッド数を1024として、通信相手が正常終了したスレッドをデタッチすることで資源を開放するようにしました。main()内で新しいクライアントをaccept()して、int client_sfd[1024]の開いてる場所（初期値-1）に格納し生成したスレッドに渡すようにしています。（これなら無限に動き続けそう）
+
+selectを使った方では、fd_setのサイズがFD_SETSIZEによって制限されていたのでこれが限界だと思います。簡単のためclientから送られてきたのを(selectによって書き込み可能であるか確かめず)即座に送り返すようにしています。つまり、clientがwriteした直後にはreadで待ち状態にあるという仮定をおいています。
+
+####################実行例(tcpechoserver1の例)####################
+ichiro:~/sourcecode/syspro/report4/kadai-b$ make
+gcc -o tcpechoserver1 tcpechoserver1.c -Wall -pthread
+ichiro:~/sourcecode/syspro/report4/kadai-b$ ./tcpechoserver1 10001 &
+[1] 6775
+ichiro:~/sourcecode/syspro/report4/kadai-b$ ./tcpechoclient 127.0.0.1 10001
+connect-complete
+hoge
+hoge
+fuga
+fuga
+^Z
+[2]+  停止                  ./tcpechoclient 127.0.0.1 10001
+ichiro:~/sourcecode/syspro/report4/kadai-b$ ./tcpechoclient 127.0.0.1 10001
+connect-complete
+hogehoge
+hogehoge
+fugafuga
+fugafuga
+^Z
+[3]+  停止                  ./tcpechoclient 127.0.0.1 10001
+ichiro:~/sourcecode/syspro/report4/kadai-b$ ./tcpechoclient 127.0.0.1 10001
+connect-complete
+３つ目
+３つ目
+ichiro:~/sourcecode/syspro/report4/kadai-b$ fg 3
+./tcpechoclient 127.0.0.1 10001
+ichiro:~/sourcecode/syspro/report4/kadai-b$ fg 2
+./tcpechoclient 127.0.0.1 10001
+ichiro:~/sourcecode/syspro/report4/kadai-b$ fg 1
+./tcpechoserver1 10001
+^C終了します
+
+####################実行例(tcpechoserver2の例)####################
+ichiro:~/sourcecode/syspro/report4/kadai-b$ make
+gcc -o tcpechoserver2 tcpechoserver2.c -Wall 
+ichiro:~/sourcecode/syspro/report4/kadai-b$ ./tcpechoserver2 10001 &
+[1] 6814
+ichiro:~/sourcecode/syspro/report4/kadai-b$ ./tcpechoclient 127.0.0.1 10001
+connect-complete
+hoge    
+hoge
+fuga
+fuga
+^Z
+[2]+  停止                  ./tcpechoclient 127.0.0.1 10001
+ichiro:~/sourcecode/syspro/report4/kadai-b$ ./tcpechoclient 127.0.0.1 10001
+connect-complete
+hogehoge
+hogehoge
+^Z
+[3]+  停止                  ./tcpechoclient 127.0.0.1 10001
+ichiro:~/sourcecode/syspro/report4/kadai-b$ jobs
+[1]   実行中               ./tcpechoserver2 10001 &
+[2]-  停止                  ./tcpechoclient 127.0.0.1 10001
+[3]+  停止                  ./tcpechoclient 127.0.0.1 10001

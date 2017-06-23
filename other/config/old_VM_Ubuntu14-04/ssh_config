@@ -1,0 +1,17 @@
+Host eccs
+HostName ssh0-01.ecc.u-tokyo.ac.jp
+User 0552824156
+Port 22
+IdentityFile ~/.ssh/id_rsa
+
+Host eccs2
+HostName ssh0-02.ecc.u-tokyo.ac.jp
+User 0552824156
+Port 22
+IdentityFile ~/.ssh/id_rsa
+
+Host eccs3
+HostName ssh0-03.ecc.u-tokyo.ac.jp
+User 0552824156
+Port 22
+IdentityFile ~/.ssh/id_rsa

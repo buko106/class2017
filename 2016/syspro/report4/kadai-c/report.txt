@@ -1,0 +1,20 @@
+2^30バイトを送ることでTCPの通信のスループットを測定しました。
+
+####################実行例####################
+ichiro:~/sourcecode/syspro/report4/kadai-c$ make
+gcc -o iperfs iperfs.c -Wall 
+gcc -o iperfc iperfc.c -Wall
+ichiro:~/sourcecode/syspro/report4/kadai-c$ ./iperfs 10000 &
+[2] 7178
+ichiro:~/sourcecode/syspro/report4/kadai-c$ ./iperfc 127.0.0.1 10000
+1073740800 1.015917 8063.643179
+[2]+  終了                  ./iperfs 10000
+ichiro:~/sourcecode/syspro/report4/kadai-c$ 
+
+同一端末上での計測の一例
+ichiro:~/sourcecode/syspro/report4/kadai-c$ ./iperfc 127.0.0.1 8100
+1073740800 0.880177 97593.17046
+
+異なる端末上での計測（学生端末室の同じハブに有線接続）
+ichiro:~/sourcecode/syspro/report4/kadai-c$ ./iperfc 133.11.XXX.XXX 8100
+1073741824 14.881609 577.218134

@@ -1,0 +1,199 @@
+共通のサブディレクトリー: min-caml/PowerPC と 01-161026/PowerPC
+共通のサブディレクトリー: min-caml/SPARC と 01-161026/SPARC
+共通のサブディレクトリー: min-caml/bytemark と 01-161026/bytemark
+diff min-caml/kNormal.ml 01-161026/kNormal.ml
+179a180,251
+> 
+> let print_space n = print_string (String.make (2*n) ' ')
+> let rec print t n =
+>   match t with
+>   | Unit -> print_string "Unit"
+>   | Int i-> print_1 (string_of_int i)  n "Int"
+>   | Float f->print_1 (string_of_float f) n "Float"
+>   | Neg id -> print_1 id n "Neg"
+>   | Add (id1,id2) -> print_2 id1 id2 n "Add"
+>   | Sub (id1,id2) -> print_2 id1 id2 n "Sub"
+>   | FNeg id-> print_1 id n "FNeg"
+>   | FAdd (id1,id2)-> print_2 id1 id2 n "FAdd"
+>   | FSub (id1,id2)-> print_2 id1 id2 n "FSub"
+>   | FMul (id1,id2)-> print_2 id1 id2 n "FMul"
+>   | FDiv (id1,id2)-> print_2 id1 id2 n "FDiv"
+>   | IfEq (id1,id2,t1,t2) -> (print_2 id1 id2 n "IfEq" ;
+>                              print_string "\n" ;
+>                              print t1 (n+1) ;
+>                              print_string "\n" ;
+>                              print t2 (n+1) ;)
+>   | IfLE (id1,id2,t1,t2) -> (print_2 id1 id2 n "IfLE" ;
+>                              print_string "\n" ;
+>                              print t1 (n+1) ;
+>                              print_string "\n" ;
+>                              print t2 (n+1) ;)
+>   | Let (idt,t1,t2) -> (print_space n;
+>                         print_string "Let ";
+>                         print_id_type idt;
+>                         print_string "\n" ;
+>                         print t1 (n+1);
+>                         print_string "\n";
+>                         print t2 (n+1);)
+>   | Var id -> print_1 id n "Var"
+>   | LetRec (fundef,t) -> (print_space n;
+>                           print_string "LetRec\n" ;
+>                           print_space (n+1);
+>                           print_id_type fundef.name ;
+>                           print_string "\n";
+>                           print_space n; print_string " ";
+>                           List.map (fun x->print_string " ";print_id_type x) fundef.args ;
+>                           print_string "\n";
+>                           print fundef.body (n+1);
+>                           print_string "\n";
+>                           print t (n+1);)
+>   | App (id,idlist) -> (print_1 id n "App" ;
+>                         List.map (fun x->print_string (" "^x)) idlist;
+>                         () ; )
+>   | Tuple idlist -> (print_space n ;
+>                      print_string "Tuple";
+>                      List.map (fun x->print_string (" "^x)) idlist ;
+>                      () ;)
+>   | LetTuple (idtlist,id,t) -> (print_space n;
+>                                 print_string "LetTuple";
+>                                 List.map (fun idt->print_string " " ;print_id_type idt) idtlist ;
+>                                 print_string "\n";
+>                                 print t (n+1) ; )
+>   | Get (id1,id2) -> print_2 id1 id2 n "Get"
+>   | Put (id1,id2,id3) -> print_3 id1 id2 id3 n "Put"
+>   | ExtArray id -> print_1 id n "ExtArray"
+>   | ExtFunApp (id,idlist) -> (print_1 id n "ExtFunApp" ;
+>                               List.map (fun x->print_string (" "^x)) idlist ;
+>                               () ) ;
+> 
+> and print_1 id n tag = (print_space n;
+>                         print_string (tag^" "^id))
+> and print_2 id1 id2 n tag = (print_space n;
+>                              print_string (tag^" "^id1^" "^id2))
+> and print_3 id1 id2 id3 n tag = (print_space n;
+>                              print_string (tag^" "^id1^" "^id2^" "^id3))
+> and print_id_type (id,ty) = (print_string id;
+>                              print_string ":" ;
+>                              Type.print_type ty)
+diff min-caml/kNormal.mli 01-161026/kNormal.mli
+28a29
+> val print: t-> int -> unit
+共通のサブディレクトリー: min-caml/shootout と 01-161026/shootout
+diff min-caml/syntax.ml 01-161026/syntax.ml
+27a28,123
+> 
+> let print_space n = print_string (String.make (2*n) ' ')
+> 
+> let rec print t n =
+>   (
+>   match t with
+>   | Unit -> (print_space n ; print_string "Unit")
+>   | Bool b -> (print_space n;print_string (if b then "Bool true" else "Bool false"))
+>   | Int i -> (print_space n;
+>               print_string "Int ";
+>               print_int i)
+>   | Float f -> (print_space n;
+>                 print_string "Float ";
+>                 print_float f)
+>   | Not t -> print_t t n "Not"
+>   | Neg t -> print_t t n "Neg"
+>   | Add (s,t) -> print_st s t n "Add"
+>   | Sub (s,t) -> print_st s t n "Sub"
+>   | FNeg t -> print_t t n "FNeg"
+>   | FAdd (s,t)-> print_st s t n "FAdd"
+>   | FSub (s,t)-> print_st s t n "FSub"
+>   | FMul (s,t)-> print_st s t n "FMul"
+>   | FDiv (s,t)-> print_st s t n "FDiv"
+>   | Eq (s,t)-> print_st s t n "Eq"
+>   | LE (s,t)-> print_st s t n "LE"
+>   | If (s,t,u)-> print_stu s t u n "If"
+>   | Let ((id,ty),s,t) -> (print_space n;
+>                           print_string "Let\n";
+>                           print_space (n+1);
+>                           print_string (id^":");
+>                           Type.print_type ty;
+>                           print_string "\n";
+>                           print s (n+1);
+>                           print_string "\n";
+>                           print t (n+1);
+>                          )
+>   | Var id -> (print_space n;print_string ("Var "^id))
+>   | LetRec (fundef,t) -> (print_space n;
+>                           print_string "LetRec\n";
+>                           print_space (n+1) ;
+>                           print_id_type fundef.name;
+>                           print_string "\n";
+>                           print_space (n+1);
+>                           List.map (fun idt->print_id_type idt;print_string " ") fundef.args;
+>                           print_string "\n";
+>                           print fundef.body (n+1);
+>                           print_string "\n" ;
+>                           print t (n+1))
+>   | App (t,tlist) -> (print_space n;
+>                       print_string "App\n";
+>                       print t (n+1);
+>                       print_string "\n";
+>                       List.map (fun t->print t (n+1)) tlist;
+>                       ())
+>   | Tuple tlist -> (print_space n;
+>                     print_string "Tuple \n";
+>                     List.map (fun t->print t (n+1);print_string "\n") tlist;
+>                     print_space n;
+>                     print_string "endTuple")
+>   | LetTuple (idtlist,s,t) -> (print_space n;
+>                                print_string "LetTuple\n" ;
+>                                print_space (n+1);
+>                                List.map (fun x->print_id_type x ; print_string " " ) idtlist ;
+>                                print_string "\n";
+>                                print s (n+1);
+>                                print_string "\n";
+>                                print t (n+1))
+>   | Array (s,t) -> print_st s t n "Array"
+>   | Get (s,t) -> print_st s t n "Get"
+>   | Put (s,t,u)->print_stu s t u n "Put"
+>   )
+> 
+> and print_id_type (id,ty) = (
+>                              print_string id;
+>                              print_string ":" ;
+>                              Type.print_type ty ;
+>                             )
+> 
+> and print_t t n tag = (print_space n;
+>                        print_string (tag^"\n");
+>                        print t (n+1))
+> 
+> and print_st s t n tag = (print_space n;
+>                           print_string (tag^"\n");
+>                           print s (n+1);
+>                           print_string "\n";
+>                           print t (n+1))
+> 
+> and print_stu s t u n tag = (print_space n;
+>                              print_string (tag^"\n");
+>                              print s (n+1);
+>                              print_string "\n";
+>                              print t (n+1);
+>                              print_string "\n";
+>                              print u (n+1))
+> 
+共通のサブディレクトリー: min-caml/test と 01-161026/test
+diff min-caml/type.ml 01-161026/type.ml
+11a12,27
+> 
+> let rec print_type t = 
+>   match t with
+>   | Unit -> print_string "Unit"
+>   | Bool -> print_string "Bool"
+>   | Int  -> print_string "Int"
+>   | Float-> print_string "Float"
+>   | Fun (tlist,t) -> (print_string "Fun(";
+>                       List.map (fun t->print_type t;print_string "->") tlist;
+>                       print_type t;
+>                       print_string ")"
+>                      )
+>   | Tuple tlist -> (print_string "Tuple( " ;List.map (fun t->print_type t;print_string " ") tlist ; print_string ")")
+>   | Array t -> (print_string "Array(" ; print_type t ; print_string ")")
+>   | Var reft -> (print_string "Var(" ;
+>                  (match !reft with Some t -> print_type t | None -> print_string "_") ; print_string ")")
+共通のサブディレクトリー: min-caml/x86 と 01-161026/x86

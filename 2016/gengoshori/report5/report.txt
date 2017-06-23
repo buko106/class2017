@@ -1,0 +1,129 @@
+言語処理系論 第５回レポート課題 05-161026 平出一郎
+
+##########ソースコードのdiff##########
+(lexer.mllのdiff)
+tokenとしてGT,GE,WHILE,DOを追加しました。
+
+tansei:~/sourcecode/gengoshori$ diff parser/lexer.mll report5/lexer.mll
+39a40,41
+> | ">" {GT(get_pos lexbuf)}
+> | ">=" {GE(get_pos lexbuf)}
+48a51,52
+> | "while" {WHILE}
+> | "do"  {DO}
+
+
+
+(parser.mlyのdiff)
+同じくtokenを追加しさらに、while,doが演算子の次に優先順位が高くなるようにしました。
+
+tansei:~/sourcecode/gengoshori$ diff parser/parser.mly report5/parser.mly
+7c7
+<    ASSIGN ARRAY  IF  THEN  ELSE  LET IN  END
+---
+>    ASSIGN ARRAY  IF  THEN  ELSE  LET IN  END WHILE DO
+10c10
+< %token <Absyn.pos> PLUS MINUS TIMES DIVIDE EQ NEQ LT LE
+---
+> %token <Absyn.pos> PLUS MINUS TIMES DIVIDE EQ NEQ LT LE GT GE
+18c18,19
+< %left EQ NEQ LT LE 
+---
+> %nonassoc WHILE DO
+> %left EQ NEQ LT LE GT GE
+59a61,62
+>   | WHILE exp DO exp
+>      {WhileExp($2,$4)}
+96c99,100
+< 
+---
+>   | GT {(GtOp,$1)}
+>   | GE {(GeOp,$1)}
+
+
+
+
+(absyn.mlのdiff)
+oper にGtOp,GeOpを追加しました。
+exp にWhileExp of exp * expを追加しました。
+
+
+tansei:~/sourcecode/gengoshori$ diff parser/absyn.ml report5/absyn.ml
+16a17
+>  | WhileExp of exp * exp
+30c31
+< | EqOp | NeqOp | LtOp | LeOp 
+---
+> | EqOp | NeqOp | LtOp | LeOp | GtOp | GeOp
+
+
+#########################################
+#################実行例##################
+#########################################
+tansei:~/sourcecode/gengoshori/report5$ cat fibwhile.tig
+let
+   function fib (n: int) :int =
+     let var i:int := 0 in
+        let var fn1:int := 1 in
+           let var fn:int := 0 in
+              let var sum:int := 0 in
+                 while n>i do
+                 (
+                    sum := fn1 + fn;
+                    fn  := fn1;
+                    fn1 := sum;
+                    i   := i + 1;
+                 );
+                 fn
+              end
+           end
+        end
+     end
+in
+   fib(5)
+
+これに対しパース結果
+
+# Parsetest.test "fibwhile.tig";;
+- : Absyn.exp =
+Absyn.LetExp
+ (Absyn.FunctionDec
+   (("fib", (2, 12)), [(("n", (2, 17)), {contents = true}, Absyn.IntTy)],
+    Some Absyn.IntTy,
+    Absyn.LetExp
+     (Absyn.VarDec
+       (("i", (3, 13)), {contents = true}, Some Absyn.IntTy, Absyn.IntExp 0),
+     Absyn.SeqExp
+      [Absyn.LetExp
+        (Absyn.VarDec
+          (("fn1", (4, 16)), {contents = true}, Some Absyn.IntTy,
+           Absyn.IntExp 1),
+        Absyn.SeqExp
+         [Absyn.LetExp
+           (Absyn.VarDec
+             (("fn", (5, 19)), {contents = true}, Some Absyn.IntTy,
+              Absyn.IntExp 0),
+           Absyn.SeqExp
+            [Absyn.LetExp
+              (Absyn.VarDec
+                (("sum", (6, 22)), {contents = true}, Some Absyn.IntTy,
+                 Absyn.IntExp 0),
+              Absyn.SeqExp
+               [Absyn.WhileExp
+                 (Absyn.OpExp (Absyn.VarExp ("n", (7, 23)),
+                   (Absyn.GtOp, (7, 24)), Absyn.VarExp ("i", (7, 25))),
+                 Absyn.SeqExp
+                  [Absyn.AssignExp (("sum", (9, 20)),
+                    Absyn.OpExp (Absyn.VarExp ("fn1", (9, 27)),
+                     (Absyn.PlusOp, (9, 31)), Absyn.VarExp ("fn", (9, 33))));
+                   Absyn.AssignExp (("fn", (10, 20)),
+                    Absyn.VarExp ("fn1", (10, 27)));
+                   Absyn.AssignExp (("fn1", (11, 20)),
+                    Absyn.VarExp ("sum", (11, 27)));
+                   Absyn.AssignExp (("i", (12, 20)),
+                    Absyn.OpExp (Absyn.VarExp ("i", (12, 27)),
+                     (Absyn.PlusOp, (12, 29)), Absyn.IntExp 1))]);
+                Absyn.VarExp ("fn", (14, 17))])])])])),
+ Absyn.SeqExp [Absyn.CallExp (("fib", (20, 3)), [Absyn.IntExp 5])])
+
+が得られた。

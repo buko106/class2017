@@ -1,0 +1,137 @@
+syspro 課題7レポート
+
+05-161026 平出一郎
+
+(A)
+SIGINTを受け取るとcountをインクリメントし10に達したら終了するプログラムを作りました。
+グローバル変数countにはvolatile修飾子をつけました。
+シグナル安全な関数としてwrite(2),_exit(2)を用いました。
+
+#####実行例#####
+
+tansei:~/sourcecode/syspro/report7$ make
+gcc -o count10 count10.c -O3 -Wall
+gcc -o ish ish.c parse.c print.c -Wall  
+tansei:~/sourcecode/syspro/report7$ ./count10 
+^C^C^C^C^C^C^C^C^C^Cexit
+
+
+(B,C,D,E)
+(B)
+
+まずジョブが入力された時に、setpgidを呼び出してPGIDをジョブの一番左のプロセスと同じにしています。
+フォアグラウンド実行をするrunという関数を作り、その中でシェルがtcsetpgrpを呼びフォアグラウンドをジョブに渡す、取り返すということをしています。
+その後waitid()を用いて終了を待ちます。
+sigactionを用いて、SIGINTを受け取った時の動作をSIG_IGNに設定しました。
+
+
+tansei:~/sourcecode/syspro/report7$ ./ish
+ish$ /bin/sleep 10
+Running [5156]  /bin/sleep 10 [ 5156 ]
+^Cish$ 
+ish$ ^C^C^C^C
+
+(C)
+
+バックグラウンド実行(&がついたとき)の場合はフォアグランドを渡さず、また終了を待たずにシェルに戻ります。このときのジョブはmain内のjob *bg_jobsの先頭に追加されます。
+シェルは1コマンドごとにvoid check_bg(job**);という関数を呼ぶことになっていて、終了ステータスを監視しジョブのすべてのプロセスが終了しているかwaitidでチェックします。このようにゾンビプロセスが発生しないようになっています。
+
+ish$ /bin/sleep 10 | /bin/sleep 20 | /bin/sleep 5 &
+ish$ 
+ish$ jobs
+Running [5471]  /bin/sleep 10 [ 5471 ] |  /bin/sleep 20 [ 5472 ] |  /bin/sleep 5 [ 5473 ]
+ish$ 
+ish$ ^C^C
+ish$ 
+exited Running [5471]  /bin/sleep 10 [ 5471 ] |  /bin/sleep 20 [ 5472 ] |  /bin/sleep 5 [ 5473 ]
+ish$ /bin/ps -j
+Running [5476]  /bin/ps -j [ 5476 ]
+  PID  PGID   SID TTY          TIME CMD
+ 3142  3142  3142 pts/12   00:00:00 bash
+ 5155  5155  3142 pts/12   00:00:00 ish
+ 5476  5476  3142 pts/12   00:00:00 ps   // 1つもゾンビになっていない。
+
+(D)
+
+Ctrl-Zで停止するのと、シェルがフォアグラウンドに戻るのはここまでの実装と同じで良いはずで、フォアグラウンド実行をする関数run()の中でステータスをチェックし、.si_code == CLD_STOPPED の場合はシグナルによる中断なのでバックグラウンド実行の時のようにbg_jobsのリストに追加するようにしました。このときjob,process構造体を拡張しpgid,pidを覚えておくようにしました。
+
+bgはbg()という関数を呼びだし、バックグラウンドにいるジョブ（＝プロセスグループ）の一つにSIGCONTを送信します。bgは引数としてプロセスグループIDを受け取るか、さもなくばリストの先頭のジョブを走らせます。すでに走っているジョブが指定されることは無いとしています。
+
+ish$ /bin/sleep 10 | /bin/sleep 5
+Running [5526]  /bin/sleep 10 [ 5526 ] |  /bin/sleep 5 [ 5527 ]
+^Zish$ /bin/sleep 5 | /bin/sleep 10
+Running [5528]  /bin/sleep 5 [ 5528 ] |  /bin/sleep 10 [ 5529 ]
+^Zish$ 
+ish$ jobs
+Stopped [5528]  /bin/sleep 5 [ 5528 ] |  /bin/sleep 10 [ 5529 ]
+Stopped [5526]  /bin/sleep 10 [ 5526 ] |  /bin/sleep 5 [ 5527 ]
+ish$ bg 5526
+ish$ 
+exited Running [5526]  /bin/sleep 10 [ 5526 ] |  /bin/sleep 5 [ 5527 ]
+ish$ 
+ish$ jobs
+Stopped [5528]  /bin/sleep 5 [ 5528 ] |  /bin/sleep 10 [ 5529 ]
+ish$ 
+ish$ bg
+ish$ 
+exited Running [5528]  /bin/sleep 5 [ 5528 ] |  /bin/sleep 10 [ 5529 ]
+ish$ 
+ish$ jobs
+ish$ 
+ish$ bg
+bg: No background job
+ish$ 
+ish$ /bin/ps -j
+Running [5531]  /bin/ps -j [ 5531 ]
+  PID  PGID   SID TTY          TIME CMD
+ 5502  5502  5502 pts/0    00:00:00 bash
+ 5525  5525  5502 pts/0    00:00:00 ish
+ 5531  5531  5502 pts/0    00:00:00 ps
+
+
+
+(E)
+
+fg()という関数で引数にPGIDが合致するジョブをbg_jobsから探し、そのジョブに対してrun()を呼び出します、引数なしは同じくリストの先頭です。runの中では(B)での実装に加えてそのプロセスグループに対しSIGCONTを送信するようにしました。
+
+ish$ /bin/sleep 10 &
+ish$ jobs
+Running [5548]  /bin/sleep 10 [ 5548 ]
+ish$ fg
+
+ish$ ish$ 
+ish$ ish$ /bin/sleep 10 | /bin/sleep 10 
+Running [5549]  /bin/sleep 10 [ 5549 ] |  /bin/sleep 10 [ 5550 ]
+^Zish$ /bin/sleep 5 | /bin/sleep 10
+Running [5554]  /bin/sleep 5 [ 5554 ] |  /bin/sleep 10 [ 5555 ]
+^Zish$ /bin/sleep 10 | /bin/sleep 10
+Running [5557]  /bin/sleep 10 [ 5557 ] |  /bin/sleep 10 [ 5558 ]
+^Zish$ /bin/ps -j
+Running [5559]  /bin/ps -j [ 5559 ]
+  PID  PGID   SID TTY          TIME CMD
+ 3142  3142  3142 pts/12   00:00:00 bash
+ 5546  5546  3142 pts/12   00:00:00 ish
+ 5549  5549  3142 pts/12   00:00:00 sleep
+ 5550  5549  3142 pts/12   00:00:00 sleep
+ 5554  5554  3142 pts/12   00:00:00 sleep
+ 5555  5554  3142 pts/12   00:00:00 sleep
+ 5557  5557  3142 pts/12   00:00:00 sleep
+ 5558  5557  3142 pts/12   00:00:00 sleep
+ 5559  5559  3142 pts/12   00:00:00 ps
+ish$ jobs
+Stopped [5557]  /bin/sleep 10 [ 5557 ] |  /bin/sleep 10 [ 5558 ]
+Stopped [5554]  /bin/sleep 5 [ 5554 ] |  /bin/sleep 10 [ 5555 ]
+Stopped [5549]  /bin/sleep 10 [ 5549 ] |  /bin/sleep 10 [ 5550 ]
+ish$ fg 5554
+ish$ jobs
+Stopped [5557]  /bin/sleep 10 [ 5557 ] |  /bin/sleep 10 [ 5558 ]
+Stopped [5549]  /bin/sleep 10 [ 5549 ] |  /bin/sleep 10 [ 5550 ]
+ish$ fg
+ish$ fg
+ish$ jobs
+ish$ /bin/ps -j
+Running [5561]  /bin/ps -j [ 5561 ]
+  PID  PGID   SID TTY          TIME CMD
+ 3142  3142  3142 pts/12   00:00:00 bash
+ 5546  5546  3142 pts/12   00:00:00 ish
+ 5561  5561  3142 pts/12   00:00:00 ps

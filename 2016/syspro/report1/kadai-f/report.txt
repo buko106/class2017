@@ -1,0 +1,23 @@
+コマンド
+
+ps -e
+kill -KILL [PID]
+
+
+
+実行例
+##########ビジーループ##########
+ichiro@ichiro-Latitude-E5410:~/syspro/kadai-f$ ./kadai-f 
+
+##########別のTerminalでkill##########
+ichiro@ichiro-Latitude-E5410:~$ ps -e
+  PID TTY          TIME CMD
+    1 ?        00:00:01 init
+    2 ?        00:00:00 kthreadd
+（中略）
+ 3117 ?        00:00:00 kworker/u16:0
+ 3126 ?        00:00:00 kworker/1:1
+ 3136 pts/1    00:00:00 kadai-f
+ 3137 pts/1    00:00:00 kadai-f
+ 3138 pts/12   00:00:00 ps
+ichiro@ichiro-Latitude-E5410:~$ kill -KILL 3136 3137

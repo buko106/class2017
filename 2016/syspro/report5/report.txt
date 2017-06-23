@@ -1,0 +1,72 @@
+課題５ httpserver 05-161026 平出一郎
+
+
+再提出において追加したこと(2016/06/07)
+
+Header全体を読むようにしました。(読んで何か動作を加えるということはしていません)
+相対参照で上の階層へ戻る".."を含むrequestはForbiddenとして拒否するようにしました。
+
+
+
+
+
+tcpechoserver1(マルチスレッド)を改造してhttpserverにしました。
+acceptするたびにスレッドを１つ立てるようになっています。
+スレッドを呼び出すときに渡すhttpという関数の中で一連の処理をするようになっています。
+通常のブラウザ(firefox)での動作を確認しました。
+
+ApacheBenchによるテストではbench側が先にクローズしてSIGPIPEを受け取ってしまうので、SIGPIPEは無視するようにしました。
+
+##########実行例##########
+ichiro@ubuntu:~/sourcecode/syspro/report5$ make
+gcc -o httpserver httpserver.c -Wall -pthread
+ichiro@ubuntu:~/sourcecode/syspro/report5$ ./httpserver 8100 ./
+documet root=./
+（以下略）
+
+##########別のターミナルからアパッチベンチ##########
+ichiro@ubuntu:~$ ab -c 5 -n 100 http://localhost:8100/man_socket.txt
+This is ApacheBench, Version 2.3 <$Revision: 1528965 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient).....done
+
+
+Server Software:        
+Server Hostname:        localhost
+Server Port:            8100
+
+Document Path:          /man_socket.txt
+Document Length:        0 bytes
+
+Concurrency Level:      5
+Time taken for tests:   0.018 seconds
+Complete requests:      100
+Failed requests:        0
+Total transferred:      4636 bytes
+HTML transferred:       0 bytes
+Requests per second:    5425.64 [#/sec] (mean)
+Time per request:       0.922 [ms] (mean)
+Time per request:       0.184 [ms] (mean, across all concurrent requests)
+Transfer rate:          245.64 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.5      0       4
+Processing:     0    1   0.8      0       4
+Waiting:        0    0   0.6      0       4
+Total:          0    1   0.9      1       4
+WARNING: The median and mean for the processing time are not within a normal deviation
+        These results are probably not that reliable.
+
+Percentage of the requests served within a certain time (ms)
+  50%      1
+  66%      1
+  75%      1
+  80%      1
+  90%      2
+  95%      4
+  98%      4
+  99%      4
+ 100%      4 (longest request)

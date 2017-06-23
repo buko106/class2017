@@ -1,0 +1,204 @@
+####################問１####################
+# #use "q1.ml";;
+val sum_to : int -> int = <fun>
+val is_prime : int -> bool = <fun>
+val gcd : int -> int -> int = <fun>
+# sum_to 0;;
+- : int = 0
+# sum_to 1;;
+- : int = 1
+# sum_to 10;;
+- : int = 55
+# sum_to 100;;
+- : int = 5050
+# is_prime 1;;
+- : bool = false
+# is_prime 2;;
+- : bool = true
+# is_prime 3;;
+- : bool = true
+# is_prime 17;;
+- : bool = true
+# is_prime 117;;
+- : bool = false
+# is_prime 1117;;
+- : bool = true
+# gcd 100 225;;
+- : int = 25
+# gcd 3 2;;
+- : int = 1
+# gcd 117 27;;
+- : int = 9
+####################問２####################
+# #use "q2.ml";;
+val twice : ('a -> 'a) -> 'a -> 'a = <fun>
+val repeat : ('a -> 'a) -> int -> 'a -> 'a = <fun>
+# twice (fun x->2*x) 3 ;;
+- : int = 12
+# repeat (fun x->2*x) 4 3 ;;
+- : int = 48
+####################問３####################
+考察：例えばsum_to 2を呼び出した場合
+fix sum_to_sub 2が呼ばれ(sum_to_subをfと略記すると)
+fix f 2
+-> f (fix f) 2
+-> 2 + (fix f) 1
+-> 2 + f (fix f) 1
+-> 2 + 1 + (fix f) 0
+-> 2 + 1 + f (fix f) 0
+-> 2 + 1 + 0
+-> 3
+というように展開される。
+このように再帰関数を再帰の部分を外側に出してfixに任せることによってlet recを使わずに書ける。
+
+実行例
+# #use "q3.ml";;
+val fix : (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b = <fun>
+val sum_to : int -> int = <fun>
+val is_prime : int -> bool = <fun>
+val gcd : int -> int -> int = <fun>
+# sum_to 10;;
+- : int = 55
+# is_prime 1;;
+- : bool = false
+# is_prime 2;;
+- : bool = true
+# is_prime 3;;
+- : bool = true
+# is_prime 27;;
+- : bool = false
+# is_prime 117;;
+- : bool = false
+# gcd 27 117;;
+- : int = 9
+####################問４####################
+matchを使うことで実装できた。fold_leftはx_1,x_2と順番に取り出してfに適用することで末尾再帰にできた。fold_rightは末尾再帰にしようとするとリストの一番後ろを毎回取り出す必要があるので、末尾再帰のreverseを内部に定義して入力リストを逆にしてからfold_leftと同様に末尾再帰にできた。
+
+実行例
+# #use "q4.ml";;
+val fold_right : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b = <fun>
+val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a = <fun>
+# fold_right (fun x y -> x + 2*y) [1;2;3;4] 0;;
+- : int = 49
+# fold_left (fun x y -> x + 2*y) 0 [1;2;3;4];;
+- : int = 20
+####################問５####################
+再帰をうまく使うことで、@を使わず::だけで記述できた。
+
+実行例
+# #use "q5.ml";;
+val append : 'a list -> 'a list -> 'a list = <fun>
+val filter : ('a -> bool) -> 'a list -> 'a list = <fun>
+# append [1;2;3] [4;5;6];;
+- : int list = [1; 2; 3; 4; 5; 6]
+# filter (fun x-> x mod 2 = 0) [1;2;3;4;5;6];;
+- : int list = [2; 4; 6]
+####################問６####################
+fold_rightを用いると、リストに加えていく関数畳み込むだけなので簡単で線形時間で動きます。
+fold_leftを用いる方は、リストの末尾の要素を取り出すような関数を使えば簡単に実現できるがこれだとリスト長の二乗時間かかってしまう。appendの引数をxs ysとしたとすると、発展２の考えかたを用いてfold_leftでリストを受け取りその先頭ににxsを加えたリストを返す関数を作りそれをysに適用することで線形時間で動くようになりました。
+
+実行例
+# #use "q6.ml";;
+val fold_right : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b = <fun>
+val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a = <fun>
+val append_by_left : 'a list -> 'a list -> 'a list = <fun>
+val filter_by_left : ('a -> bool) -> 'a list -> 'a list = <fun>
+val append_by_right : 'a list -> 'a list -> 'a list = <fun>
+val filter_by_right : ('a -> bool) -> 'a list -> 'a list = <fun>
+# append_by_left [1;2;3] [4;5;6];;
+- : int list = [1; 2; 3; 4; 5; 6]
+# append_by_right [1;2;3] [4;5;6];;
+- : int list = [1; 2; 3; 4; 5; 6]
+# filter_by_left (fun x-> x mod 2 = 0) [1;2;3;4;5;6];;
+- : int list = [2; 4; 6]
+# filter_by_right (fun x-> x mod 2 = 0) [1;2;3;4;5;6];;
+- : int list = [2; 4; 6]
+####################問７####################
+長さnの配列(a_i)を元にした順列
+= (a_i*(a_iを除く長さn-1の配列を元にした順列))(i=1,2,...n)の和集合
+というふうに再帰的に順列を構成できるので、これに従った。
+配列の使い方を習っていなかったのでperm_subという関数を作って、ysからa_iを取り出して、a_iより前の要素はxsに貯めこむことによって、xs@ys=(a_iを除いた配列)となるようにしました。
+
+実行例
+# #use "q7.ml";;
+val map : ('a -> 'b) -> 'a list -> 'b list = <fun>
+val perm : 'a list -> 'a list list = <fun>
+# perm [1;2;3;4];;
+- : int list list =
+[[1; 2; 3; 4]; [1; 2; 4; 3]; [1; 3; 2; 4]; [1; 3; 4; 2]; [1; 4; 3; 2];
+ [1; 4; 2; 3]; [2; 1; 3; 4]; [2; 1; 4; 3]; [2; 3; 1; 4]; [2; 3; 4; 1];
+ [2; 4; 3; 1]; [2; 4; 1; 3]; [3; 2; 1; 4]; [3; 2; 4; 1]; [3; 1; 2; 4];
+ [3; 1; 4; 2]; [3; 4; 1; 2]; [3; 4; 2; 1]; [4; 3; 2; 1]; [4; 3; 1; 2];
+ [4; 2; 3; 1]; [4; 2; 1; 3]; [4; 1; 2; 3]; [4; 1; 3; 2]]
+# perm ["This";"is";"a";"pen"];;
+- : string list list =
+[["This"; "is"; "a"; "pen"]; ["This"; "is"; "pen"; "a"];
+ ["This"; "a"; "is"; "pen"]; ["This"; "a"; "pen"; "is"];
+ ["This"; "pen"; "a"; "is"]; ["This"; "pen"; "is"; "a"];
+ ["is"; "This"; "a"; "pen"]; ["is"; "This"; "pen"; "a"];
+ ["is"; "a"; "This"; "pen"]; ["is"; "a"; "pen"; "This"];
+ ["is"; "pen"; "a"; "This"]; ["is"; "pen"; "This"; "a"];
+ ["a"; "is"; "This"; "pen"]; ["a"; "is"; "pen"; "This"];
+ ["a"; "This"; "is"; "pen"]; ["a"; "This"; "pen"; "is"];
+ ["a"; "pen"; "This"; "is"]; ["a"; "pen"; "is"; "This"];
+ ["pen"; "a"; "is"; "This"]; ["pen"; "a"; "This"; "is"];
+ ["pen"; "is"; "a"; "This"]; ["pen"; "is"; "This"; "a"];
+ ["pen"; "This"; "is"; "a"]; ["pen"; "This"; "a"; "is"]]
+####################発展１####################
+reverse_by_fold_rightが難しく、fold_rightを使ってリストに要素を加える関数を作ってそれを空リストに適用することで反転が線形時間で実現できました。
+@を使った要素数の二乗時間かかるreverse_naiveをつくり、実行時間を5000要素の配列に対して比較することで線形で動いてることを確認できたと思います。
+
+# #use "adv1.ml";;
+val fold_right : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b = <fun>
+val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a = <fun>
+val reverse : 'a list -> 'a list = <fun>
+val reverse_naive : 'a list -> 'a list = <fun>
+val reverse_by_fold_right : 'a list -> 'a list = <fun>
+val make_reversed : int -> int list = <fun>
+val a : int list =
+  [5000; 4999; 4998; 4997; 4996; 4995; 4994; 4993; 4992; 4991; 4990; 4989;
+（略）]
+# reverse a;;
+- : int list =
+[1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21;
+（略・早い）]
+# reverse_naive a;;
+- : int list =
+[1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21;
+（略・遅い）]
+# reverse_by_fold_right a;;
+- : int list =
+[1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20; 21;
+（略・早い）]
+####################発展２####################
+fold_leftの初期値eを恒等関数(fun x->x)にして、fold_rightがなすべき適用順にリストの要素を適用していく関数を作って、それに対し与えられたeを後から適用することで実現できました。（逆も同じ）
+実行例
+# #use "adv2.ml";;
+val fold_right : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b = <fun>
+val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a = <fun>
+val fold_right_by_left : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b = <fun>
+val fold_left_by_right : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a = <fun>
+# fold_right_by_left (fun x s -> string_of_int (x + int_of_string s)) [1;2;3;4;5] "0";;
+- : string = "15"
+# fold_left_by_right (fun s x -> string_of_int (x + int_of_string s)) "0" [1;2;3;4;5];;
+- : string = "15"
+####################発展３####################
+encode,decodeはそれぞれチャーチ数とintを行き来するための関数です。
+subは型が合わずにつまらない実装になりました。
+
+# #use "adv3.ml";;
+val add : ('a -> 'b -> 'c) -> ('a -> 'd -> 'b) -> 'a -> 'd -> 'c = <fun>
+val mul : ('a -> 'b) -> ('c -> 'a) -> 'c -> 'b = <fun>
+val encode : int -> ('a -> 'a) -> 'a -> 'a = <fun>
+val decode : ((int -> int) -> int -> 'a) -> 'a = <fun>
+val sub :
+  ((int -> int) -> int -> int) ->
+  ((int -> int) -> int -> int) -> ('a -> 'a) -> 'a -> 'a = <fun>
+# (decode (add (encode 10) (encode 5)));;
+- : int = 15
+# (decode (mul (encode 10) (encode 5)));;
+- : int = 50
+# (decode (sub (encode 10) (encode 5)));;
+- : int = 5
+# (decode (sub (encode 1) (encode 5)));;
+- : int = 0

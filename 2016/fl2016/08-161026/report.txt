@@ -1,0 +1,126 @@
+05-161026平出一郎
+
+関数・論理型プログラミング第8回
+
+問１のインタプリタはq1内でmake
+問２のインタプリタはq2内でmake
+発展２のインタプリタはadv3内でmake
+でビルドしてください。
+
+########################################
+#################問１###################
+########################################
+
+infer_exprはスライドにある制約の収集、単一化を適切に行うのを実装しました。新しい型変数を返す関数new_tyvarを、呼ぶたびに参照の整数を１ずつインクリメントしながらその値を返す関数としました。
+infer_exprは作っておらずeval_commandの中で必要な型検査を行っています。
+
+let rec ... and f_i x_i = e_i ...の型推論が複雑で、型変数の割り当てを
+f_1 , ... f_n に a_i -> b_i
+x_1 , ... x_n に a_i
+とした上でe_kの型を（元の型環境）+ ( f_i = a_i -> b_i (i=1,...,n)) + ( x_k = a_k )という型環境で推論する必要がありました。
+
+# fun x -> x+1;;
+- : (int->int) = <fun>
+# let id = fun x->x;;
+val id : ('_a->'_a) = <fun>
+# let rec fix f x = f (fix f) x;;
+val fix : ((('_a->'_b)->('_a->'_b))->('_a->'_b)) = <fun>
+# let rec even n = if n=0 then true else odd (n-1)
+      and odd n = if n=0 then false else even(n-1);;
+val even : (int->bool) = <fun>
+val odd : (int->bool) = <fun>
+# id id;;
+Error: InferErr("unification error")   (* 型スキーマがないのでダメ *)
+# fun x -> x x;;
+Error: InferErr("unification error")   (* 自己適用は再帰型が必要 *)
+# fun f -> if f true then f 0 + 1 else 0;;
+Error: InferErr("unification error")   (* 引数は単相型と前提するのでダメ *)
+# if id true then id 0 + 1 else 0;;
+Error: InferErr("unification error")   (* 型スキーマがないのでダメ *)
+# let s m n r = m r (n r);;
+val s : (('_a->('_b->'_c))->(('_a->'_b)->('_a->'_c))) = <fun>
+# let k m n = m;;
+val k : ('_a->('_b->'_a)) = <fun>
+# s k;;
+- : (('_a->'_b)->('_a->'_a)) = <fun>
+# s k k;;
+Error: InferErr("unification error")   (* kが同じ型と推論されるのでダメ *)
+
+
+
+########################################
+#################問２###################
+########################################
+
+(注) 型推論に使う関数をinfer.ml内に移動しました。
+
+
+型スキーマを次で定義しました。
+type type_schema = tyvar list * ty
+
+get_type_varsは型の中に出てくる型変数を列挙してリストで返す関数です。
+generalizeは型環境tyenvと型tyを受け取って、tyに現れtyenvに現れない型変数を列挙することで型スキーマを生成する関数です。これはget_type_vars tyの結果であるリストに対し型環境に現れているかfilterをかけることで実装しています。
+instantiateはinfer_exprのEVar（変数）のところでinlineでやってしまっていますが、型スキーマのもつリストの中に入ってる型変数全てについてそれに対応する新しい型変数をnew_tyvarで用意してからty_substですべて入れ替えるということをしています。
+
+型スキーマのインタプリタ上での表示を 'a_1. ... 'a_n. ( ... )のように多相型のリストを型の前に列挙して表示するようにしました。(syntax.mlの中にstring_of_ty: type_schema -> string という関数があります)
+
+またfun x->xなどでもでも多相型になるようにCExpが型スキーマを文字列に変換するまえにgeneralizeを挟むようにしています。
+
+# fun x -> x;;
+- : 'a.('a -> 'a) = <fun>
+# let id x = x;;
+val id : 'a.('a -> 'a) = <fun>
+# let rec fix f x = f (fix f) x;;
+val fix : 'a.'b.((('a -> 'b) -> 'a -> 'b) -> 'a -> 'b) = <fun>
+# id id;;
+- : 'a.('a -> 'a) = <fun>
+# id id id;;
+- : 'a.('a -> 'a) = <fun>
+# fun x->x x;;
+Error: InferErr("unification error")
+# fun f -> if f true then f 0 + 1 else 0;;
+Error: InferErr("unification error")
+# if id true then id 0 + 1 else 0;;
+- : int = 1
+# let s m n r = m r (n r);;
+val s : 'a.'b.'c.(('a -> 'b -> 'c) -> ('a -> 'b) -> 'a -> 'c) = <fun>
+# let k m n = m;;
+val k : 'a.'b.('a -> 'b -> 'a) = <fun>
+# let i = s k k ;;
+val i : 'a.('a -> 'a) = <fun>
+
+########################################
+################発展２##################
+########################################
+
+両側の型が同じペアという特殊な場合の型を用意して、そこに潰すということをしました。変更点は以下です（補助的な関数内は省略）。
+
+
+type ty =
+...
+  | TSamePair of ty
+
+let rec infer_expr : tyenv -> expr -> ty * constraints = fun tyenv e ->
+  match e with
+...
+  | EPair (e1,e2) -> let (t1,c1) = infer_expr tyenv e1 in
+                     let (t2,c2) = infer_expr tyenv e2 in
+                     if t1 = t2 then
+                       ( TSamePair t1 , c1@c2 )
+                     else
+                       ( TPair (t1,t2) ,c1@c2 )
+...
+
+#####実行例#####
+（型も値もサイズが大きすぎて落ちてしまうので表示は簡略化していますが、表示を同じにすれば外部からは真面目にペアの型を推論しているように見えるはずです。）
+
+# let x = fun x -> (x,x) in
+  let x = fun y -> x (x y) in
+  let x = fun y -> x (x y) in
+  let x = fun y -> x (x y) in
+  let x = fun y -> x (x y) in
+  let x = fun y -> x (x y) in
+    x (fun x->x);;
+- : 'a.((((((((((((((((((((((((((((((((('a -> 'a) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) samepair) = 
+
+...

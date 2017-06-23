@@ -1,0 +1,117 @@
+05-161026 平出一郎
+########################################
+##################問１##################
+########################################
+eLookupは末尾まで行っても見つからないときは(Err "Not found")を返すようにしました。
+モナドの例外処理によってlookupDibがとてもスマートに書けました。
+
+##########実行例##########
+# #use "q1.ml";;
+type 'a m = Ok of 'a | Err of string
+val ( >>= ) : 'a m -> ('a -> 'b m) -> 'b m = <fun>
+val return : 'a -> 'a m = <fun>
+val err : string -> 'a m = <fun>
+val myDiv : int -> int -> int m = <fun>
+val eLookup : 'a -> ('a * 'b) list -> 'b m = <fun>
+val lookupDiv : 'a -> 'a -> ('a * int) list -> int m = <fun>
+val table : (string * int) list = [("x", 6); ("y", 0); ("z", 2)]
+val isErr : 'a m -> bool = <fun>
+ok
+- : unit = ()
+
+########################################
+##################問２##################
+########################################
+ばなな＋ばなな＝しなもんの答えは
+(ば,な,な,し,な,も,ん)=
+  [(0, 0, 0, 0, 0, 0, 0); (1, 2, 2, 0, 2, 4, 4); (2, 4, 4, 0, 4, 8, 8);
+   (2, 5, 5, 0, 5, 1, 0); (3, 7, 7, 0, 7, 5, 4); (4, 9, 9, 0, 9, 9, 8);
+   (5, 0, 0, 1, 0, 0, 0); (6, 2, 2, 1, 2, 4, 4); (7, 4, 4, 1, 4, 8, 8);
+   (7, 5, 5, 1, 5, 1, 0); (8, 7, 7, 1, 7, 5, 4); (9, 9, 9, 1, 9, 9, 8)]
+になりました。test_bananaを用いて妥当性をチェックするcheck_bananaも書きました。
+文字が５種類しかなく10^5通りなので特に枝刈りは要りませんでした
+
+SEND+MORE=MONEYの答えは
+9567+1085=10652になりました。
+
+文字は８種類で10^8通りなので途中で条件をつけて減らしていかないと終わりませんでした。
+下位に現れる文字から仮定して、(i)そこまでの計算で矛盾していないか(例：END+OREの下位3桁がNEYになっているか) (ii)そこまでに仮定している文字と重複しないか　の２種類のguardをかけながら計算しました。最上位が０にならないようにS,Mを束縛するときに0は除きました。
+
+##########実行例##########
+# #use "q2.ml";;
+type 'a m = 'a list
+val ( >>= ) : 'a m -> ('a -> 'b m) -> 'b list = <fun>
+val return : 'a -> 'a list = <fun>
+val guard : bool -> unit list = <fun>
+val test_banana : int -> int -> int -> int -> int -> bool = <fun>
+val test_money : int -> int -> int -> int -> int -> int -> int -> int -> bool =
+  <fun>
+val solve : (int * int * int * int * int * int * int) list =
+  [(0, 0, 0, 0, 0, 0, 0); (1, 2, 2, 0, 2, 4, 4); (2, 4, 4, 0, 4, 8, 8);
+   (2, 5, 5, 0, 5, 1, 0); (3, 7, 7, 0, 7, 5, 4); (4, 9, 9, 0, 9, 9, 8);
+   (5, 0, 0, 1, 0, 0, 0); (6, 2, 2, 1, 2, 4, 4); (7, 4, 4, 1, 4, 8, 8);
+   (7, 5, 5, 1, 5, 1, 0); (8, 7, 7, 1, 7, 5, 4); (9, 9, 9, 1, 9, 9, 8)]
+val solve2 :
+  (int * int * int * int * int * int * int * int * int * int * int * 
+   int * int)
+  list = [(9, 5, 6, 7, 1, 0, 8, 5, 1, 0, 6, 5, 2)]
+val check_banana : bool list =
+  [true; true; true; true; true; true; true; true; true; true; true; true]
+val check_money : bool list = [true]
+
+########################################
+##################問３##################
+########################################
+returnは引数と空の文字列のペアを返す関数になりました。
+bindはx f を受け取ってxが保持する'a型の値をa,stringをsとしたときに
+f x が返す'b型の値と、sとf xが出力する文字列の連接のペアになりました。
+出力をする副作用が実行順によって結果が変わるのと同様に、writerによる文字列への出力
+も呼び出し順によって決まるので、副作用を上手に分離し再現していることがわかりました。
+
+##########実行例##########
+# #use "q3.ml";;
+type 'a m = 'a * string
+val ( >>= ) : 'a m -> ('a -> 'b m) -> 'b m = <fun>
+val return : 'a -> 'a m = <fun>
+val writer : string -> unit * string = <fun>
+val msg : int -> string = <fun>
+val fib : int -> int m = <fun>
+Fib(4)
+Fib(2)
+Fib(0)
+Fib(1)
+Fib(3)
+Fib(1)
+Fib(2)
+Fib(0)
+Fib(1)
+- : unit = ()
+
+########################################
+##################問４##################
+########################################
+状態を持つ計算を表すstateモナドは状態の型をstateとすると
+type 'a m = state -> 'a * state
+のように書けるはずです。これはスライドのモナドの例３を参考にしました。
+
+メモ化に必要なメモの型を今回はint_to_intの連想リスト((int,int) list)として実現しました。つまり、
+type 'a m = (int * int) list -> 'a * (int * int) list
+です。
+returnの型は 'a -> (int * int) list -> 'a * (int * int) list なので受け取った連想リストを'a型の値をペアにして返す関数です。
+bindは 
+((int * int) list -> 'a * (int * int) list)             xとおく
+-> ('a -> (int * int) list -> 'b * (int * int) list)    fとおく
+-> (int * int) list -> 'b * (int * int) list
+という複雑な型ですが、(int * int) listを受け取る関数で、まずそれをxに適用した結果と適用後の連想リストの状態を受け取って、それを用いてfを呼び出した結果を返す関数になりました。
+
+memoは内部で関数lookupを定義して、その引数について計算済（連想リストに入っている）なら連想リストから値を返し,計算していないなら関数を呼びだすような仕様になっています。
+##########実行例##########
+# #use "q4.ml";;
+type 'a m = (int * int) list -> 'a * (int * int) list
+val ( >>= ) : 'a m -> ('a -> 'b m) -> 'b m = <fun>
+val return : 'a -> 'a m = <fun>
+val memo : (int -> int m) -> int -> int m = <fun>
+val runMemo : 'a m -> 'a = <fun>
+val fib : int -> int m = <fun>
+ok
+- : unit = ()

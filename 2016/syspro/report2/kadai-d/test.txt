@@ -1,0 +1,4 @@
+    S. Kato, M. McThrow, C. Maltzahn, and S. Brandt. "Gdev: First-Class GPU Resource Management in the Operating System", In Proceedings of the 2012 USENIX Annual Technical Conference (USENIX ATC'12), 2012.
+    S. Kato, K. Lakshmanan, A. Kumar, M. Kelkar, Y. Ishikawa, and R. Rajkumar. "RGEM: A Responsive GPGPU Execution Model for Runtime Engines", In Proceedings of the 32nd IEEE Real-Time Systems Symposium (RTSS'11), pp. 57-66, 2011.
+    S. Kato, K. Lakshmanan, R. Rajkumar, and Y. Ishikawa. "TimeGraph: GPU Scheduling for Real-Time Multi-Tasking Environments", In Proceedings of the 2011 USENIX Annual Technical Conference (USENIX ATC'11), 2011.
+    K. Lakshmanan, S. Kato, and R. Rajkumar. "Scheduling Parallel Real-Time Tasks on Multi-core Processors", In Proceedings of the 31st IEEE Real-Time Systems Symposium (RTSS'10), pp. 259-268, 2010.

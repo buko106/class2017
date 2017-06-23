@@ -1,0 +1,17 @@
+let
+  var x: int := 1
+in
+let
+  function f (n: int): int =
+     x + n
+in
+let function f (x:string): int =
+     if x = x then 1 else f(x)
+in
+   f("abc")
+end
+end
+end
+
+
+

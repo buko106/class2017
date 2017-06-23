@@ -11,7 +11,7 @@
     (set-background-color "Black")
     (set-foreground-color "LightGray")
     (set-cursor-color "Orange")
-    (set-frame-parameter nil 'alpha 65) ;透明度
+    (set-frame-parameter nil 'alpha 75) ;透明度
     ))
 
 (column-number-mode 1)
@@ -56,6 +56,7 @@
 
 ; hs-minor-mode
 (add-hook 'c++-mode-hook '(lambda () (hs-minor-mode 1)))
+(add-hook 'c++-mode-hook '(lambda () (setq flycheck-gcc-language-standard "c++11")))
 (add-hook   'c-mode-hook '(lambda () (hs-minor-mode 1)))
 (define-key global-map (kbd "C-\\") 'hs-toggle-hiding)
 
@@ -77,6 +78,7 @@
 ;; avy settings
 
 (global-set-key (kbd "C-:") 'avy-goto-char)
+(setq avy-keys (number-sequence ?a ?z))
 ;; guru-mode settings
 (guru-global-mode)
 
@@ -116,14 +118,15 @@
 (add-to-list 'load-path "~/.emacs.d/extern")
 
 ;; cua-mode settings
-(cua-mode t)
-(setq cua-enable-cua-keys nil)
+;; (cua-mode t)
+;; (setq cua-enable-cua-keys nil)
 
 ;; prototxt
-(require 'caffe-mode)
-(add-to-list 'auto-mode-alist '("\\.prototxt$" . caffe-mode))
+;; (require 'caffe-mode)
+;; (add-to-list 'auto-mode-alist '("\\.prototxt$" . caffe-mode))
 
 ;; flycheck
 (global-flycheck-mode t)
 (flycheck-pos-tip-mode t)
+
 

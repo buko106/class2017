@@ -21,3 +21,9 @@ HostName ssh0-03.ecc.u-tokyo.ac.jp
 User 0552824156
 Port 22
 IdentityFile ~/.ssh/id_rsa
+
+Host enshu3
+HostName 133.6.148.92
+User enshu8
+Port 222
+IdentityFile ~/.ssh/id_rsa

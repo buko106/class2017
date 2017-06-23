@@ -116,8 +116,6 @@ if ! shopt -oq posix; then
   fi
 fi
 
-
-alias g11='g++ -std=c++11'
 alias ocaml='rlwrap ocaml'
 alias rm~='rm *~'
 alias sl='sl -e'
@@ -125,4 +123,7 @@ cowsay -f $(ls /usr/share/cowsay/cows | shuf -n 1 | cut -d. -f1) $(whatis $(ls /
 function mydiff(){ diff -rN $@ | diffstat ;}
 alias mydiff=mydiff
 alias open=xdg-open
-alias ccmake='make -f ~/sourcecode/config/Makefile'
+export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
+export CPLUS_INCLUDE_PATH=$HOME/.local/include:$CPLUS_INCLUDE_PATH
+export PATH=$HOME/.local/bin:$PATH
+stty stop undef

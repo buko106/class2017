@@ -26,25 +26,9 @@
  	%キャプションの場所("tb"ならば上下両方に記載)
  	captionpos = t
 }
-%% title configuration
-\title{Template}
-\author{John Smith}
-\date{\today}
 
+%% math commands
 \let \ds \displaystyle
-
-%% headings
-\pagestyle{myheadings}
-\markboth{}{This is Sample.}
-
-
-%% document
-\begin{document}
-%%  begin title page
-\maketitle
-\pagebreak
-
-
 \newcommand{\idiff}[3]{
   \frac{d^{#1} #2}{d #3^{#1}}
 }
@@ -55,9 +39,29 @@
   \frac{\partial^{#1} #2}{\partial #3^{#1}}
 }
 
+
+
+%% title configuration
+\title{Template}
+\author{John Smith}
+\date{\today}
+
+
+%% headings
+\pagestyle{headings}
+\markright{This is Sample.}
+
+
+
+
+\begin{document}
+%%  begin title page
+\thispagestyle{empty}
+\maketitle
+\pagebreak
+
+
 %% begin contents
-
-
 $$ A \subset B \Leftrightarrow \forall x ( x \in A \Rightarrow x \in B) $$
 
 $\displaystyle  e^x = \sum_{i=0}^\infty \frac{x^i}{i!}$  $ \Rightarrow \idiff{n}{}{x} e^x = e^x$
@@ -83,8 +87,8 @@ for i in range(N):
 \end{lstlisting}
 \includegraphics[width=10cm]{template.eps}
 \pagebreak
-
-
+\newpage
+$ f(x) = \log(\log x) $
 
 \end{document}
 

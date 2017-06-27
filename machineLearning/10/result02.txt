@@ -1,0 +1,21 @@
+a=b=1.000000
+E[   x   |data] = 6.399994
+estimated(MH method) = 6.397353
+
+E[pi<=0.1|data] = 0.014445
+estimated(MH method) = 0.014157
+
+a=b=0.100000
+E[   x   |data] = 7.365846
+estimated(MH method) = 7.370790
+
+E[pi<=0.1|data] = 0.032243
+estimated(MH method) = 0.032146
+
+a=b=5.000000
+E[   x   |data] = 4.444440
+estimated(MH method) = 4.449093
+
+E[pi<=0.1|data] = 0.000333
+estimated(MH method) = 0.000407
+

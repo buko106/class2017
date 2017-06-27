@@ -1,0 +1,21 @@
+a=b=1.000000
+p(pi>=0.500000|data)=0.890624
+estimated(MH method)=0.891398
+
+p(pi>=0.800000|data)=0.344640
+estimated(MH method)=0.346338
+
+a=b=0.100000
+p(pi>=0.500000|data)=0.932139
+estimated(MH method)=0.931906
+
+p(pi>=0.800000|data)=0.559334
+estimated(MH method)=0.554884
+
+a=b=5.000000
+p(pi>=0.500000|data)=0.788024
+estimated(MH method)=0.789288
+
+p(pi>=0.800000|data)=0.043854
+estimated(MH method)=0.043286
+

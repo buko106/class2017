@@ -9,12 +9,14 @@ def beta( x, a, b):
 def f( x, a, b):
     return x**(a-1.0) * (1.0-x)**(b-1.0)
 
-
 def q( x, y ):
-    return 1.0
+    if x <= y:
+        return 2.0 * x / y
+    else:
+        return 2.0 * (1.0-x) / (1.0-y)
 
 def sampling_q( y ):
-    return np.random.uniform(0.0,1.0)
+    return np.random.triangular(0.,y,1.)
 
 for prior in prior_param:
     print("a=b=%f"%prior)

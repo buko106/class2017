@@ -1,6 +1,17 @@
 #!/bin/sh
 test -n "$1" || echo "usage: platex2pdf [tex-file]"
 test -n "$1" || exit 1 # 引数が無ければ syntax を表示して終了
+
+if [ "$1" = "clean" ]; then
+    rm -rf build
+    echo "rm -rf build"
+    for fname in *.tex; do
+        rm -f ${fname%.tex}.pdf
+        echo "rm -f ${fname%.tex}.pdf"
+    done
+    exit 0
+fi
+
 TEX=$*
 DVI=`/usr/bin/basename "$TEX" ".tex"`
 THECODE=`nkf -g "$TEX"`

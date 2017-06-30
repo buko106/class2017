@@ -89,7 +89,7 @@ def finite_difference_method_Dirichlet( nx, ny=None, f=F, a=U,xlim=np.array([0.0
     R = b - A.dot(u)
 
 
-    return X, Y, Z, np.linalg.norm(R)/np.linalg.norm(b), xs.shape[0]
+    return X, Y, Z, np.max(np.abs(R)), xs.shape[0]
 
 def test_for_cg_method( n ):
     A = np.random.randn(n,n)
@@ -106,7 +106,7 @@ def plot3D( X, Y, Z, ANS ):
     ax = Axes3D(fig)
     ax.scatter(X,Y,Z,color="blue")
     ax.plot_wireframe(X,Y,ANS,color="red")
-    plt.show()
+    plt.savefig("3D.eps")
 
     
 if __name__ == "__main__":
@@ -117,32 +117,42 @@ if __name__ == "__main__":
     #
     
     
-    origin = [0.2,-0.1]
+    origin = [0.0,-0.5]
     length = [1.0,1.0]
     xlim = np.array([origin[0],origin[0]+length[0]])
     ylim = np.array([origin[1],origin[1]+length[1]])
     
-    print("n, iter, |b-Au(xi,yj)|/|b|, |u(xi,yj)-u_ij|/|u(xi,yj)|")
+    print("n, iter, max(|b-Au(xi,yj)|), max(|u(xi,yj)-u_ij|)")
     # ns = range(10,211,20)
-    ns = np.power( 2, np.linspace(4.,8.,20) ).astype(int)
+    ns = np.power( 2, np.linspace(4.,8.,10) ).astype(int)
     data = []
     for i in ns:
         nx = i
         ny = i
         X, Y, Z, error_consistency, num = finite_difference_method_Dirichlet( nx , ny, f=F, a=U, xlim=xlim, ylim=ylim )
 
-        error_convergence = np.linalg.norm(U(X,Y)-Z) / np.linalg.norm(U(X,Y))
+        error_convergence = np.max(np.abs(U(X,Y)-Z))
         print(nx,num,error_consistency,error_convergence)
-        data += [ [1/nx,num,error_consistency,error_convergence] ]
-        # plot3D( X, Y, Z, U(X,Y) )
+        data += [ [nx,num,error_consistency,error_convergence] ]
+        if i == ns[0]:
+            plot3D( X, Y, Z, U(X,Y) )
         
     data = np.array(data)
-    plt.plot(data[:,0],data[:,1],label="iteration")
-    plt.plot(data[:,0],data[:,2],label="|b-Au(x_i,y_j)|/|b|")
-    plt.plot(data[:,0],data[:,3],label="|u(x_i,y_j)-u_i,j|/|u(x_i,y_j)|")
+
+    plt.close()
+    plt.plot(data[:,0],data[:,1],"o-")
+    plt.xlabel("n")
+    plt.ylabel("iteration")
+    plt.savefig("iteration.eps")
+        
+    plt.close()
+    plt.plot(1/data[:,0],data[:,1],label="iteration")
+    plt.plot(1/data[:,0],data[:,2],label="max(|b-Au(x_i,y_j)|)")
+    plt.plot(1/data[:,0],data[:,3],label="max(|u(x_i,y_j)-u_i,j|)")
     plt.legend(loc="center left")
     plt.xlabel("h")
     plt.xscale("log")
     plt.yscale("log")
+    plt.axis("equal")
     plt.grid(which="both")
-    plt.show()
+    plt.savefig("loglog.eps")

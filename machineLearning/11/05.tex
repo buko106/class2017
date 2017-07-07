@@ -83,6 +83,17 @@ $m^{(t)}_2 \leftarrow \mu_2-\Lambda_{22}^{-1}\Lambda_{12} ( m_1^{(t)} - \mu_1)$
 
 
 
+ランダムに生成したいくつかの$\mu,\Sigma$に対して収束するまで繰り返した。
+
+本来の2変数ガウス分布が細長いときに中心付近に集中した裾野の小さい分布が推論されるのが特徴的である。
+
+結果（複数の初期値に対して。上が本来の分布で下が推論結果の分布）
+
+\includegraphics[width=7cm]{fig_1.eps}
+\includegraphics[width=7cm]{fig_2.eps}
+
+\lstinputlisting[caption=source code(Python)]{05.py}
+
 \end{document}
 
 

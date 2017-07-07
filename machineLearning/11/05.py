@@ -9,8 +9,8 @@ Lambda = np.linalg.inv(Sigma)
 eps = 1e-4
 num = 1000
 ans = np.random.multivariate_normal(mu,Sigma,num)
-plt.scatter(ans[:,0],ans[:,1])
 plt.axis("equal")
+plt.scatter(ans[:,0],ans[:,1])
 xlim = plt.xlim()
 ylim = plt.ylim()
 plt.pause(1.)

@@ -33,7 +33,10 @@ while True:
                       old_mu-mu,
                       old_mv-mv])) < eps :
         break
-        
+print("mu_u = ",mu)
+print("mu_v = ",mv)
+print("sigma^2_u = ",su)
+print("sigma^2_v = ",sv)
 print("E[x_2,1]",mu[1]*mv[0])
 print("E[x_4,1]",mu[3]*mv[0])
 print("E[x_4,3]",mu[3]*mv[2])

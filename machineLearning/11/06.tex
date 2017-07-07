@@ -61,7 +61,7 @@
 \pagebreak
 
 
-代表して$q(u_1)$に関して整理すると
+代表して$q(u_1)$の関数だと思って整理すると
 \begin{align*}
 \log p(\{x_{i,j}\}) &= \log\int p(\{x_{i,j}\},u_{1:4},v_{1:4})du_{1:4}dv_{1:4} \\
 &\geq \int q(u_{1:4})q(v_{1:4})\log \frac{p(\{x_{i,j}\},u_{1:4},v_{1:4})}{q(u_{1:4})q(v_{1:4})}du_{1:4}dv_{1:4} \\
@@ -76,6 +76,8 @@
 
 
 $$ q(u_1) \propto \exp\left( \int \prod_{i=2}^4q(u_i)\prod_{j=1}^4q(v_j) \log p(\{x_{i,j}\},u_{1:4},v_{1:4}) du_{2:4}dv_{1:4} \right) $$
+
+が成り立つ。
 
 \begin{align*}
 &\int \prod_{i=2}^4q(u_i)\prod_{j=1}^4q(v_j) \log p(\{x_{i,j}\},u_{1:4},v_{1:4}) du_{2:4}dv_{1:4} \\
@@ -99,6 +101,15 @@ $\ds \sigma^2_{u_1} \leftarrow \left( \sum_{\exists(1,j)} \left(\sigma^2_{v_j}+\
 
 
 $\ds \mu_{u_1} \leftarrow \left( \sum_{\exists(1,j)} \left(\sigma^2_{v_j}+\mu^2_{v_j} \right) + 1 \right)^{-1}\left( \sum_{\exists(1,j)} \mu_{v_j}x_{1,j} \right)$
+
+
+$u_i,v_j$に対しても同様である。
+
+pythonを用いて、ランダムな初期値から収束するまで更新を繰り返した。
+
+\newpage 
+\lstinputlisting[caption=result]{result06.txt}
+\lstinputlisting[caption=source code]{06.py}
 
 \end{document}
 

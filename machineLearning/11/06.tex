@@ -1,0 +1,105 @@
+\documentclass[a4j]{jarticle}
+%%  packages
+\usepackage{amsmath,amssymb,ascmac}
+\usepackage{bm}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings}
+\usepackage[english]{babel}
+\lstset{
+ 	%枠外に行った時の自動改行
+ 	breaklines = true,
+ 	%標準の書体
+        basicstyle=\ttfamily\footnotesize,
+        commentstyle=\footnotesize\bfseries,
+        keywordstyle=\footnotesize\bfseries,
+ 	%枠 "t"は上に線を記載, "T"は上に二重線を記載
+	%他オプション：leftline，topline，bottomline，lines，single，shadowbox
+ 	frame = single,
+ 	%frameまでの間隔(行番号とプログラムの間)
+ 	framesep = 5pt,
+ 	%行番号の位置
+ 	numbers = left,
+	%行番号の間隔
+ 	stepnumber = 1,
+	%タブの大きさ
+ 	tabsize = 4,
+ 	%キャプションの場所("tb"ならば上下両方に記載)
+ 	captionpos = t
+}
+
+%% math commands
+\let \ds \displaystyle
+\newcommand{\idiff}[3]{
+  \frac{d^{#1} #2}{d #3^{#1}}
+}
+\newcommand{\diff}[3]{
+  \frac{\mathrm{d}^{#1} #2}{\mathrm{d} #3^{#1}}
+}
+\newcommand{\pdiff}[3]{
+  \frac{\partial^{#1} #2}{\partial #3^{#1}}
+}
+
+
+
+%% title configuration
+\title{統計的機械学習 ID:06}
+\author{05-161026 平出一郎}
+\date{\today}
+
+
+%% headings
+\pagestyle{headings}
+\markright{統計的機械学習 ID:06}
+
+
+
+
+\begin{document}
+%%  begin title page
+\thispagestyle{empty}
+\maketitle
+\pagebreak
+
+
+代表して$q(u_1)$に関して整理すると
+\begin{align*}
+\log p(\{x_{i,j}\}) &= \log\int p(\{x_{i,j}\},u_{1:4},v_{1:4})du_{1:4}dv_{1:4} \\
+&\geq \int q(u_{1:4})q(v_{1:4})\log \frac{p(\{x_{i,j}\},u_{1:4},v_{1:4})}{q(u_{1:4})q(v_{1:4})}du_{1:4}dv_{1:4} \\
+&= \int q(u_1) \left( \int \prod_{i=2}^4q(u_i)\prod_{j=1}^4q(v_j) \log p(\{x_{i,j}\},u_{1:4},v_{1:4}) du_{2:4}dv_{1:4} \right) du_1 \\
+&\quad\quad-\int q(u_1) \log q(u_1)du_1 + const
+\end{align*}
+
+
+となる。
+
+変分法を用いて積分の中身の$q(u_1)$での微分$=0$を考えることによって、
+
+
+$$ q(u_1) \propto \exp\left( \int \prod_{i=2}^4q(u_i)\prod_{j=1}^4q(v_j) \log p(\{x_{i,j}\},u_{1:4},v_{1:4}) du_{2:4}dv_{1:4} \right) $$
+
+\begin{align*}
+&\int \prod_{i=2}^4q(u_i)\prod_{j=1}^4q(v_j) \log p(\{x_{i,j}\},u_{1:4},v_{1:4}) du_{2:4}dv_{1:4} \\
+=& - \frac{1}{2} \int \prod_{i=2}^4q(u_i)\prod_{j=1}^4q(v_j) \left( \sum_{\exists(i,j)}(x_{i,j}-u_iv_j)^2 + \sum_{i=1}^4 u_i^2 + \sum_{j=1}^4 v_j^2 \right)du_{2:4}dv_{1:4}
+\end{align*}
+
+カッコの中が$u_1$の係数正の二次式になる。よって式の形から$q(u_1) = \mathcal{N}(u_1 | \mu_{u_1}, \sigma^2_{u_1})$となることがわかる。
+
+同様にして、$q(u_i) = \mathcal{N}(u_i | \mu_{u_i}, \sigma^2_{u_i})$,$q(v_i) = \mathcal{N}(v_i | \mu_{v_i}, \sigma^2_{v_i})$と書けることを利用して変形すると、
+
+
+\begin{align*}
+=& - \frac{1}{2} \left\{ \left(\int \prod_{j=1}^4q(v_j) \left( \sum_{\exists(1,j)}v_j^2 + 1 \right)dv_{1:4} \right) u_1^2  -2 \left( \int \prod_{j=1}^4q(v_j) \sum_{\exists(1,j)} v_jx_{1,j} dv_{1:4} \right) u_1 + const \right\} \\
+=& - \frac{1}{2} \left\{ \left( \sum_{\exists(1,j)} \left(\sigma^2_{v_j}+\mu^2_{v_j} \right) + 1 \right) u_1^2 -2 \left( \sum_{\exists(1,j)} \mu_{v_j}x_{1,j} \right)u_1 + const \right\}
+\end{align*}
+
+よって更新式は
+
+
+$\ds \sigma^2_{u_1} \leftarrow \left( \sum_{\exists(1,j)} \left(\sigma^2_{v_j}+\mu^2_{v_j} \right) + 1 \right)^{-1}$
+
+
+$\ds \mu_{u_1} \leftarrow \left( \sum_{\exists(1,j)} \left(\sigma^2_{v_j}+\mu^2_{v_j} \right) + 1 \right)^{-1}\left( \sum_{\exists(1,j)} \mu_{v_j}x_{1,j} \right)$
+
+\end{document}
+
+

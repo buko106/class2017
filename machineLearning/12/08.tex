@@ -1,0 +1,109 @@
+\documentclass[a4j]{jarticle}
+%%  packages
+\usepackage{amsmath,amssymb,ascmac}
+\usepackage{bm}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings}
+\usepackage[english]{babel}
+\lstset{
+ 	%枠外に行った時の自動改行
+ 	breaklines = true,
+ 	%標準の書体
+        basicstyle=\ttfamily\footnotesize,
+        commentstyle=\footnotesize\bfseries,
+        keywordstyle=\footnotesize\bfseries,
+ 	%枠 "t"は上に線を記載, "T"は上に二重線を記載
+	%他オプション：leftline，topline，bottomline，lines，single，shadowbox
+ 	frame = single,
+ 	%frameまでの間隔(行番号とプログラムの間)
+ 	framesep = 5pt,
+ 	%行番号の位置
+ 	numbers = left,
+	%行番号の間隔
+ 	stepnumber = 1,
+	%タブの大きさ
+ 	tabsize = 4,
+ 	%キャプションの場所("tb"ならば上下両方に記載)
+ 	captionpos = t
+}
+
+%% math commands
+\let \ds \displaystyle
+\newcommand{\idiff}[3]{
+  \frac{d^{#1} #2}{d #3^{#1}}
+}
+\newcommand{\diff}[3]{
+  \frac{\mathrm{d}^{#1} #2}{\mathrm{d} #3^{#1}}
+}
+\newcommand{\pdiff}[3]{
+  \frac{\partial^{#1} #2}{\partial #3^{#1}}
+}
+
+
+
+%% title configuration
+\title{統計的機械学習 ID:08}
+\author{05-161026 平出一郎}
+\date{\today}
+
+
+%% headings
+\pagestyle{headings}
+\markright{統計的機械学習 ID:08}
+
+
+
+
+\begin{document}
+%%  begin title page
+\thispagestyle{empty}
+\maketitle
+\pagebreak
+
+
+
+\begin{align*}
+\intertext{$\Lambda_u$に着目すると、}
+L[q(u_{1:J},v_{i:j});\Lambda_u,\Lambda_v,\sigma^2] &= \int q(u_{1:J}) \log p(u_{1:J}|\Lambda_u) du_{1:J} &+ const\\
+&= \int \prod_{j=1}^Jq(u_j) \sum_{j=1}^J \log p(u_j|\Lambda_u) du_{1:J} &+ const \\
+&= \sum_{j=1}^J \int \mathcal{N}(u_j|\mu_{u,j},V_{u,j}) \log \mathcal{N}(u_j|0,\Lambda_u)du_j &+const \\
+&= \sum_{j=1}^J \int \mathcal{N}(u_j|\mu_{u,j},V_{u,j}) \left( -\frac{1}{2} \log |\Lambda_u| - \frac{1}{2} u_j^\top \Lambda_u^{-1}u_j \right) du_j &+ const \\
+&= -\frac{J}{2} \log |\Lambda_u| -\frac{1}{2}\sum_{j=1}^J\int\mathcal{N}(u_j|\mu_{u,j},V_{u,j})\sum_{k=1}^K\frac{u_{j,k}^2}{\rho_{u,k}^2}du_j &+ const \\
+\intertext{ガウス分布の周辺化により、}
+&= -J \sum_{k=1}^K \log \rho_{u,k} -\frac{1}{2}\sum_{j=1}^J\sum_{k=1}^K\rho_{u,k}^{-2}\int\mathcal{N}(u_{j,k}|\mu_{u,j,k},[V_{u,j}]_{k,k})u_{j,k}^2du_{j,k} &+ const \\
+&= -J \sum_{k=1}^K \log \rho_{u,k} -\frac{1}{2}\sum_{k=1}^K\rho_{u,k}^{-2}\sum_{j=1}^J \left( [V_{u,j}]_{k,k} + \mu_{u,j,k}^2 \right)&+ const \\
+\end{align*}
+\begin{align*}
+\intertext{($\rho_{u,k}$での微分)=0を考えることにより、}
+  - J\rho_{u,k}^{-1} + \rho_{u,k}^{-3}\sum_{j=1}^J \left( [V_{u,j}]_{k,k} + \mu_{u,j,k}^2 \right) = 0 \\
+\Leftrightarrow  \rho_{u,k}^2 = \frac{1}{J}\sum_{j=1}^J \left( [V_{u,j}]_{k,k} + \mu_{u,j,k}^2 \right)
+\end{align*}
+同様に$\ds \rho_{v,k}^2 = \frac{1}{I}\sum_{i=1}^I \left( [V_{v,i}]_{k,k} + \mu_{v,i,k}^2 \right)$も示される。
+
+
+
+$\sigma^2$に着目すると、
+\begin{align*}
+L[q(u_{1:J},v_{i:j});\Lambda_u,\Lambda_v,\sigma^2] &= \int q(u_{1:J})q(v_{1:I}) \sum_{(j,i)\in O}\log p(r_{j,i}|u_j^\top v_i,\sigma^2) du_{1:J}dv_{1:I} &+ const\\
+&= -|O|\log \sigma -\frac{1}{2\sigma^2}\int q(u_{1:J})q(v_{1:I}) \sum_{(j,i)\in O} (r_{j,i}-u_j^\top v_i)^2 du_{1:J}dv_{1:I} &+ const\\
+\intertext{($\sigma$での微分)=0を考えることにより、}
+\sigma^2 & = \frac{1}{|O|}\int q(u_{1:J})q(v_{1:I}) \sum_{(j,i)\in O} (r_{j,i}-u_j^\top v_i)^2 du_{1:J}dv_{1:I}
+\end{align*}
+
+
+
+\begin{align*}
+& \int q(u_{1:J})q(v_{1:I}) \sum_{(j,i)\in O} (r_{j,i}-u_j^\top v_i)^2 du_{1:J}dv_{1:I} \\
+= & \sum_{(j,i)\in O} \left( r_{j,i}^2 -2r_{j,i} \int q(u_{1:J})q(v_{1:I}) u_j^\top v_i du_{1:J}dv_{1:I} + T_{j,i} \right)\\
+= & \sum_{(j,i)\in O} \left( r_{j,i}^2 -2r_{j,i} \mu_{u,j}^\top \mu_{v,i} + T_{j,i} \right)
+\intertext{ただし、}
+T_{j,i}=& \int q(u_j)q(v_i) (u_j^\top v_i)^2 du_jdv_i \\
+=& \int q(u_j)q(v_i) \mathrm{Tr}(u_ju_j^\top v_iv_i^\top) du_jdv_i
+\intertext{独立性により、}
+=& \mathrm{Tr}( E_{u_j}[u_ju_j^\top] E_{v_i}[v_iv_i^\top] ) \\
+=& \mathrm{Tr}\left\{ (V_{u,j}+\mu_{u,j}\mu_{u,j}^\top)(V_{v,i}+\mu_{v,i}\mu_{v,i}^\top) \right\}
+\end{align*}
+
+\end{document}
+
+

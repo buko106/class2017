@@ -1,0 +1,78 @@
+\documentclass[a4j]{jarticle}
+%%  packages
+\usepackage{amsmath,amssymb,ascmac}
+\usepackage{bm}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings}
+\usepackage[english]{babel}
+\lstset{
+ 	%枠外に行った時の自動改行
+ 	breaklines = true,
+ 	%標準の書体
+        basicstyle=\ttfamily\footnotesize,
+        commentstyle=\footnotesize\bfseries,
+        keywordstyle=\footnotesize\bfseries,
+ 	%枠 "t"は上に線を記載, "T"は上に二重線を記載
+	%他オプション：leftline，topline，bottomline，lines，single，shadowbox
+ 	frame = single,
+ 	%frameまでの間隔(行番号とプログラムの間)
+ 	framesep = 5pt,
+ 	%行番号の位置
+ 	numbers = left,
+	%行番号の間隔
+ 	stepnumber = 1,
+	%タブの大きさ
+ 	tabsize = 4,
+ 	%キャプションの場所("tb"ならば上下両方に記載)
+ 	captionpos = t
+}
+
+%% math commands
+\let \ds \displaystyle
+\newcommand{\idiff}[3]{
+  \frac{d^{#1} #2}{d #3^{#1}}
+}
+\newcommand{\diff}[3]{
+  \frac{\mathrm{d}^{#1} #2}{\mathrm{d} #3^{#1}}
+}
+\newcommand{\pdiff}[3]{
+  \frac{\partial^{#1} #2}{\partial #3^{#1}}
+}
+
+
+
+%% title configuration
+\title{統計的機械学習 ID:07}
+\author{05-161026 平出一郎}
+\date{\today}
+
+
+%% headings
+\pagestyle{headings}
+\markright{統計的機械学習 ID:07}
+
+
+
+
+\begin{document}
+%%  begin title page
+\thispagestyle{empty}
+\maketitle
+\pagebreak
+
+スライドの導出より
+
+\begin{align*}
+q(u_j) & \varpropto \exp \left( -\frac{1}{2\sigma^2}\left( -2u_j^\top \sum_{i:(j,i)\in O}r_{j,i}E_{q(v_i)}[v_i] + u_j^\top\left( \sum_{i:(j,i)\in O} E_{q(v_i)}[vv^\top] + \sigma^2 \Lambda_u \right) u_j \right) \right) \\
+ \intertext{$\mu_{u,j},V_{u,j}$を用いて整理すると、}
+ & = \exp \left( -\frac{1}{2\sigma^2}\left( -2u_j^\top \sigma^2 V_{u,j}^{-1} \mu_{u,j} + u_j^\top \sigma^2 V_{u,j}^{-1} u_j \right) \right) \\
+ & \varpropto \exp \left( -\frac{1}{2} (u_j - \mu_{u,j})^\top V_{u,j}^{-1} (u_j - \mu_{u,j}) \right) \\
+\intertext{比例定数を計算するまでもなく、以下が成り立つことがわかる。}
+ q(u_j) &= \mathcal{N}\left( u_j | \mu_{u,j},V_{u,j}\right)
+\end{align*}
+$u_j$と$v_i$を入れ替えて同様に計算すれば、 $ q(v_i) = \mathcal{N}\left( v_i | \mu_{v,i},V_{v,i}\right) $ も導かれる。
+
+
+\end{document}
+
+

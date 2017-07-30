@@ -47,13 +47,16 @@ def post_tweet(tweet):
 
 def get_serch():
     resouce = "search/tweets.json"
-    params = {"q":"スペイベ", "lang":"ja", "count":100 }
+    query = 'レポ 個握'
+    result_type = "mixed"
+    max_id = "891249416937406464"
+    params = {"q":query, "lang":"ja", "count":100, "result_type":result_type, "max_id":max_id }
     resp = twitter.get(prefix+resouce,params=params)
     print("status_code =",resp.status_code)
     body = json.loads(resp.text)
     if resp.status_code == 200:
         for status in body["statuses"]:
-            print("created at",status["created_at"])
+            print("id =",status["id"],"created at",status["created_at"])
             print("%s@%s" % (status["user"]["name"],status["user"]["screen_name"]))
             print(status["text"])
             print("")
@@ -63,7 +66,6 @@ def get_serch():
                     wget.download(media["media_url"],out="output")
     else:
         print(body)
-
-# get_serch()
+get_serch()
 # post_tweet("test4")
-get_limits()
+# get_limits()

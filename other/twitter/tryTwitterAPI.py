@@ -2,6 +2,8 @@
 from requests_oauthlib import OAuth1Session
 from argparse import ArgumentParser
 import json
+import wget
+import os
 
 description="try Twitter API"
 parser = ArgumentParser(description=description)
@@ -42,5 +44,26 @@ def post_tweet(tweet):
         print("created_at",body["created_at"])
     else:
         print(body)
-post_tweet("test4")
-# get_limits()
+
+def get_serch():
+    resouce = "search/tweets.json"
+    params = {"q":"スペイベ", "lang":"ja", "count":100 }
+    resp = twitter.get(prefix+resouce,params=params)
+    print("status_code =",resp.status_code)
+    body = json.loads(resp.text)
+    if resp.status_code == 200:
+        for status in body["statuses"]:
+            print("created at",status["created_at"])
+            print("%s@%s" % (status["user"]["name"],status["user"]["screen_name"]))
+            print(status["text"])
+            print("")
+            extended_entities = status.get("extended_entities")
+            if extended_entities is not None:
+                for media in extended_entities["media"]:
+                    wget.download(media["media_url"],out="output")
+    else:
+        print(body)
+
+# get_serch()
+# post_tweet("test4")
+get_limits()

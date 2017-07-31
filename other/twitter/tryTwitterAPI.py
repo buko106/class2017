@@ -36,8 +36,8 @@ def get_limits():
 def post_tweet(tweet):
     assert(type(tweet)==str)
     resouce = "statuses/update.json"
-    params = {"status": tweet}
-    resp = twitter.post(prefix+resouce,params=params)
+    data = {"status": tweet}
+    resp = twitter.post(prefix+resouce,data=data)
     print("status_code =",resp.status_code)
     body = json.loads(resp.text)
     if resp.status_code == 200:
@@ -45,13 +45,27 @@ def post_tweet(tweet):
     else:
         print(body)
 
-def get_serch():
+def post_icon(filename):
+    resouce = "account/update_profile_image.json"
+    from base64 import b64encode
+    icon = open(filename,"rb").read()
+    icon64 = b64encode(icon)
+    data = {"image":icon64}
+    resp = twitter.post(prefix+resouce,data=data)
+    print("status_code =",resp.status_code)
+    body = json.loads(resp.text)
+    if resp.status_code == 200:
+        print("created_at",body["created_at"])
+    else:
+        print(body)
+
+def get_serch(query,count=100,lang="ja",max_id=None,result_type="mixed"):
     resouce = "search/tweets.json"
-    query = 'レポ 個握'
-    result_type = "mixed"
     max_id = "891249416937406464"
-    params = {"q":query, "lang":"ja", "count":100, "result_type":result_type, "max_id":max_id }
-    resp = twitter.get(prefix+resouce,params=params)
+    data = {"q":query, "count":count, "lang":lang, "result_type":result_type }
+    if max_id is not None:
+        data["max_id"] = max_id
+    resp = twitter.get(prefix+resouce,data=data)
     print("status_code =",resp.status_code)
     body = json.loads(resp.text)
     if resp.status_code == 200:
@@ -66,6 +80,9 @@ def get_serch():
                     wget.download(media["media_url"],out="output")
     else:
         print(body)
-get_serch()
-# post_tweet("test4")
+
+
+#get_serch("")
+#post_tweet("あああ")
 # get_limits()
+#post_icon("result.png")

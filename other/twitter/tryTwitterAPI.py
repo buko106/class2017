@@ -62,10 +62,10 @@ def post_icon(filename):
 def get_serch(query,count=100,lang="ja",max_id=None,result_type="mixed"):
     resouce = "search/tweets.json"
     max_id = "891249416937406464"
-    data = {"q":query, "count":count, "lang":lang, "result_type":result_type }
+    params = {"q":query, "count":count, "lang":lang, "result_type":result_type }
     if max_id is not None:
-        data["max_id"] = max_id
-    resp = twitter.get(prefix+resouce,data=data)
+        params["max_id"] = max_id
+    resp = twitter.get(prefix+resouce,params=params)
     print("status_code =",resp.status_code)
     body = json.loads(resp.text)
     if resp.status_code == 200:

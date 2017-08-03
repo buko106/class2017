@@ -57,9 +57,11 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+    # PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\[\033[00m\]\[\033[01;34m\]\W\[\033[00m\]\$ '
 else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+    # PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+    PS1='${debian_chroot:+($debian_chroot)}\W\$ '
 fi
 unset color_prompt force_color_prompt
 
@@ -119,7 +121,7 @@ fi
 alias ocaml='rlwrap ocaml'
 alias rm~='rm *~'
 alias sl='sl -e'
-cowsay -f $(ls /usr/share/cowsay/cows | shuf -n 1 | cut -d. -f1) $(whatis $(ls /bin) 2>/dev/null | shuf -n 1)
+cowsay -f $(basename $(ls /usr/share/cowsay/cows | shuf -n 1) .cow) $(whatis $(ls /bin) 2>/dev/null | shuf -n 1)
 function mydiff(){ diff -rN $@ | diffstat ;}
 alias mydiff=mydiff
 alias open=xdg-open
@@ -127,3 +129,27 @@ export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 export CPLUS_INCLUDE_PATH=$HOME/.local/include:$CPLUS_INCLUDE_PATH
 export PATH=$HOME/.local/bin:$PATH
 stty stop undef
+
+# pyenv and virtualenv
+export PYENV_ROOT=$HOME/.pyenv
+export PATH=$PYENV_ROOT/bin:$PATH
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+
+## Git Prompt
+# Read script
+PS1='\[\033[36m\]$(__git_ps1)\[\033[00m\]'$PS1
+source $HOME/.git-prompt.sh
+# Show information to prompt
+GIT_PS1_SHOWDIRTYSTATE=true
+GIT_PS1_SHOWUNTRACKEDFILES=true
+GIT_PS1_SHOWSTASHSTATE=true
+GIT_PS1_SHOWUPSTREAM=auto
+
+# ## powerline
+# powerline-daemon -q
+# POWERLINE_BASH_CONTINUATION=1
+# POWERLINE_BASH_SELECT=1
+# . ~/.local/lib/python3.5/site-packages/powerline/bindings/bash/powerline.sh
+

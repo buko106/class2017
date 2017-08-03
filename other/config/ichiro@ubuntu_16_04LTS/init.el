@@ -129,4 +129,18 @@
 (global-flycheck-mode t)
 (flycheck-pos-tip-mode t)
 
+;; typescript
+(add-hook 'typescript-mode-hook
+          (lambda ()
+            (tide-setup)
+            (eldoc-mode t)
+            (setq typescript-indent-level 2)
+            (auto-complete-mode t)
+;;            (company-mode-on)
+            ))
 
+;; magit( emacs + git )
+(global-set-key (kbd "C-x g") 'magit-status)
+;; yatex mode
+(autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
+(add-to-list 'auto-mode-alist '("\\.tex$" . yatex-mode))

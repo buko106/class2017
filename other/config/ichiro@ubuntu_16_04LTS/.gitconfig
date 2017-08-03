@@ -1,3 +1,10 @@
 [user]
 	email = buko1062000@yahoo.co.jp
 	name = buko106
+[alias]
+        st = status
+        ft = fetch
+        pl = pull
+        ps = push
+        br = branch
+        graph = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative

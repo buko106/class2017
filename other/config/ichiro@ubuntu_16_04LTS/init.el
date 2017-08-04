@@ -144,3 +144,4 @@
 ;; yatex mode
 (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
 (add-to-list 'auto-mode-alist '("\\.tex$" . yatex-mode))
+(setq YaTeX-kanji-code 4)

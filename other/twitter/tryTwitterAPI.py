@@ -36,7 +36,6 @@ def get_limits():
                 print(k,"remaining =",v["remaining"])
     else:
         print(body)
-    print(json.dumps(body,indent=2))
 
 def post_tweet(tweet,media_ids=None,media=None):
     assert(type(tweet)==str)
@@ -109,6 +108,6 @@ def get_serch(query,count=100,lang="ja",max_id=None,result_type="mixed"):
 
 #get_serch("")
 #post_tweet("")
-post_image("")
-#get_limits()
+#post_image("")
+get_limits()
 #post_icon("result.png")

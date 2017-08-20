@@ -83,9 +83,8 @@ def post_icon(filename):
     else:
         print(body)
 
-def get_serch(query,count=100,lang="ja",max_id=None,result_type="mixed"):
+def get_serch(query,count=100,lang="ja",max_id=None,result_type="mixed",download_media=False):
     resource = "search/tweets.json"
-    max_id = "891249416937406464"
     params = {"q":query, "count":count, "lang":lang, "result_type":result_type }
     if max_id is not None:
         params["max_id"] = max_id
@@ -96,18 +95,48 @@ def get_serch(query,count=100,lang="ja",max_id=None,result_type="mixed"):
         for status in body["statuses"]:
             print("id =",status["id"],"created at",status["created_at"])
             print("%s@%s" % (status["user"]["name"],status["user"]["screen_name"]))
+            print("url = http://twitter.com/%s/status/%d"%(status["user"]["screen_name"],status["id"]))
             print(status["text"])
-            print("")
             extended_entities = status.get("extended_entities")
             if extended_entities is not None:
                 for media in extended_entities["media"]:
-                    wget.download(media["media_url"],out="output")
+                    print("media detected ->",media["media_url"])
+                    if download_media:
+                        wget.download(media["media_url"],out="output")
+            print("\n-----------------------------------------------------------------\n")
     else:
         print(body)
 
-
+def get_user_timeline(user_id=None,screen_name=None,count=200,since_id=None,max_id=None):
+    resource = "statuses/user_timeline.json"
+    params = { 
+        "user_id":user_id,
+        "screen_name":screen_name,
+        "count":count,
+        "since_id":since_id,
+        "max_id":max_id,
+    }
+    resp = twitter.get(prefix+resource,params=params)
+    print("status_code =",resp.status_code)
+    body = json.loads(resp.text)
+    if resp.status_code == 200:
+        for status in body:
+            print("id =",status["id"],"created at",status["created_at"])
+            print("%s@%s" % (status["user"]["name"],status["user"]["screen_name"]))
+            print(status["text"])
+            if status["entities"].get("media") is not None:
+                for media in status["entities"]["media"]:
+                    print("media detected(%s) -> %s"%(media["type"],media["media_url"]))
+            # extended_entities = status.get("extended_entities")
+            # if download_media and extended_entities is not None:
+            #     for media in extended_entities["media"]:
+            #         wget.download(media["media_url"],out="output")
+            print("\n-----------------------------------------------------------------\n")
+        
+    
+#get_user_timeline(screen_name="buko106")
 #get_serch("")
-#post_tweet("")
+#post_tweet("Twitter Rest APIを用いた，テストツイートです．")
 #post_image("")
-get_limits()
-#post_icon("result.png")
+#get_limits()
+#post_icon("icon.png")

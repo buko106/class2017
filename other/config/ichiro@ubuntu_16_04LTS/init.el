@@ -61,7 +61,7 @@
 (define-key global-map (kbd "C-\\") 'hs-toggle-hiding)
 
 (global-auto-complete-mode t)
-
+(setq ac-ignore-case nil)
 ;; Prolog
 (add-to-list 'auto-mode-alist '("\\.pl$" . prolog-mode))
 (add-hook   'prolog-mode-hook '(lambda () (auto-complete-mode 1)))

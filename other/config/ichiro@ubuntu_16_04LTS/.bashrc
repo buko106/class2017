@@ -130,7 +130,7 @@ export CPLUS_INCLUDE_PATH=$HOME/.local/include:$CPLUS_INCLUDE_PATH
 export PATH=$HOME/.local/bin:$PATH
 stty stop undef
 
-# pyenv and virtualenv
+# pyenv and pyenv-virtualenv
 export PYENV_ROOT=$HOME/.pyenv
 export PATH=$PYENV_ROOT/bin:$PATH
 eval "$(pyenv init -)"

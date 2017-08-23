@@ -132,11 +132,59 @@ def get_user_timeline(user_id=None,screen_name=None,count=200,since_id=None,max_
             #     for media in extended_entities["media"]:
             #         wget.download(media["media_url"],out="output")
             print("\n-----------------------------------------------------------------\n")
+ 
+def get_user_stream(Delimited=None,StallWarnings=None,With=None,Replies=None,Track=None,Locations=None,StringifyFriendIds=None):
+    resource = "https://userstream.twitter.com/1.1/user.json"
+    # set params
+    params = {}
+    if Delimited is not None : params["delimited"] = Delimited
+    if StallWarnings is not None : params["stall_warnings"] = StallWarnings
+    if With is not None : params["with"] = With
+    if Replies is not None : params["replies"] = Replies
+    if Track is not None : params["track"] = Track
+    if Locations is not None : params["locations"] = Locations
+    if StringifyFriendIds is not None : params["stringify_friend_ids"] = StringifyFriendIds
+    # request
+    import requests
+    from requests_oauthlib import OAuth1    
+    auth = OAuth1(client_key, client_secret, resource_owner_key, resource_owner_secret)
+    resp = requests.post(resource,auth=auth,stream=True,params=params)
+    for line in resp.iter_lines():
+        if not line :
+            continue
+        body = json.loads(line.decode("utf-8"))
+        # print(json.dumps(body,indent=2))
+        print("############################################################")
+        print("created_at : %s"%body.get("created_at"))
+        if body.get("id_str") and body.get("user") and body.get("user").get("screen_name"):
+            print("url : http://twitter.com/%s/status/%s"%(body["user"]["screen_name"],body["id_str"]))
+        if body.get("favorited"):
+            print("favorited this tweet",body["id"])
+        if body.get("retweeted"):
+            print("retweeted this tweet",body["id"])                
+        if body.get("event"):
+            print("event %s",body["event"])
+        if body.get("user"):
+            print("%s@%s"%(body["user"].get("name"),body["user"].get("screen_name")))
+        if body.get("in_reply_to_screen_name"):
+            print("-> @%s"%body["in_reply_to_screen_name"])
+        print("------------------------------------------------------------")
+        if body.get("text"):
+            print(body["text"])
+        # print(json.dumps(body.get("user"),indent=2))
+        print("------------------------------------------------------------")
+        print(body.keys())
+        print("")
+        # if body.get("user"):print(json.dumps(body["user"],indent=2))
+
+        if body.get("disconnect"):
+            print(json.dumps(body["disconnect"],indent=2))
+            return
         
-    
+get_user_stream()
 #get_user_timeline(screen_name="buko106")
 #get_serch("")
-#post_tweet("Twitter Rest APIを用いた，テストツイートです．")
+#post_tweet("Twitter Rest APIを用いた，テストツイートです")
 #post_image("")
 #get_limits()
 #post_icon("icon.png")

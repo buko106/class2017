@@ -37,14 +37,16 @@ def get_limits():
     else:
         print(body)
 
-def post_tweet(tweet,media_ids=None,media=None):
-    assert(type(tweet)==str)
+def post_tweet(status,media_ids=None,media=None,in_reply_to_status_id=None):
+    assert(type(status)==str)
     resource = "statuses/update.json"
-    data = {"status": tweet}
+    data = {"status": status}
     if media_ids is not None:
         data["media_ids"]=media_ids
     if media is not None:
         data["media"]=media
+    if in_reply_to_status_id is not None:
+        data["in_reply_to_status_id"] = in_reply_to_status_id
     resp = twitter.post(prefix+resource,data=data)
     print("status_code =",resp.status_code)
     body = json.loads(resp.text)
@@ -149,13 +151,21 @@ def get_user_stream(Delimited=None,StallWarnings=None,With=None,Replies=None,Tra
     from requests_oauthlib import OAuth1    
     auth = OAuth1(client_key, client_secret, resource_owner_key, resource_owner_secret)
     resp = requests.post(resource,auth=auth,stream=True,params=params)
+    import datetime
     for line in resp.iter_lines():
         if not line :
             continue
         body = json.loads(line.decode("utf-8"))
         # print(json.dumps(body,indent=2))
         print("############################################################")
-        print("created_at : %s"%body.get("created_at"))
+        if body.get("created_at"):
+            print("created_at : %s"%body["created_at"])
+            parsed = datetime.datetime.strptime(body.get("created_at"),"%a %b %d %H:%M:%S %z %Y")
+            if body.get("timestamp_ms"):
+                parsed = datetime.datetime.fromtimestamp(float(body["timestamp_ms"])/1000)
+                timestr = parsed.strftime("%Y-%m-%d %H:%M:%S.%f")
+                if body.get("text") and "334" in body["text"]:
+                    post_tweet("@"+ body["user"]["screen_name"]+" [bot] このツイートは "+timestr+" に呟かれました．",in_reply_to_status_id=body["id"])
         if body.get("id_str") and body.get("user") and body.get("user").get("screen_name"):
             print("url : http://twitter.com/%s/status/%s"%(body["user"]["screen_name"],body["id_str"]))
         if body.get("favorited"):
@@ -163,7 +173,7 @@ def get_user_stream(Delimited=None,StallWarnings=None,With=None,Replies=None,Tra
         if body.get("retweeted"):
             print("retweeted this tweet",body["id"])                
         if body.get("event"):
-            print("event %s",body["event"])
+            print("event : %s"%body["event"])
         if body.get("user"):
             print("%s@%s"%(body["user"].get("name"),body["user"].get("screen_name")))
         if body.get("in_reply_to_screen_name"):
@@ -181,7 +191,7 @@ def get_user_stream(Delimited=None,StallWarnings=None,With=None,Replies=None,Tra
             print(json.dumps(body["disconnect"],indent=2))
             return
         
-get_user_stream()
+get_user_stream(With="user")
 #get_user_timeline(screen_name="buko106")
 #get_serch("")
 #post_tweet("Twitter Rest APIを用いた，テストツイートです")

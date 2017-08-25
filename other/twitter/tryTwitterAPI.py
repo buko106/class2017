@@ -163,7 +163,7 @@ def get_user_stream(Delimited=None,StallWarnings=None,With=None,Replies=None,Tra
             parsed = datetime.datetime.strptime(body.get("created_at"),"%a %b %d %H:%M:%S %z %Y")
             if body.get("timestamp_ms"):
                 parsed = datetime.datetime.fromtimestamp(float(body["timestamp_ms"])/1000)
-                timestr = parsed.strftime("%Y-%m-%d %H:%M:%S.%f")
+                timestr = parsed.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
                 if body.get("text") and "334" in body["text"]:
                     post_tweet("@"+ body["user"]["screen_name"]+" [bot] このツイートは "+timestr+" に呟かれました．",in_reply_to_status_id=body["id"])
         if body.get("id_str") and body.get("user") and body.get("user").get("screen_name"):

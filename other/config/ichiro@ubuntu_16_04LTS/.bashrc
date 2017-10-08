@@ -147,9 +147,13 @@ GIT_PS1_SHOWUNTRACKEDFILES=true
 GIT_PS1_SHOWSTASHSTATE=true
 GIT_PS1_SHOWUPSTREAM=auto
 
-# ## powerline
-# powerline-daemon -q
-# POWERLINE_BASH_CONTINUATION=1
-# POWERLINE_BASH_SELECT=1
-# . ~/.local/lib/python3.5/site-packages/powerline/bindings/bash/powerline.sh
+# source $HOME/.bazel/bin/bazel-complete.bash
 
+# gcc
+# gcc-7.2
+GCC_7_2_ROOT=$HOME/.gcc-7.2
+export PATH=$GCC_7_2_ROOT/bin:$PATH
+export LD_LIBRARY_PATH=$GCC_7_2_ROOT/lib64:$GCC_7_2_ROOT/lib:$LD_LIBRARY_PATH
+
+# npm run ionic:serve
+alias ionic-serve='ionic serve --browser google-chrome'

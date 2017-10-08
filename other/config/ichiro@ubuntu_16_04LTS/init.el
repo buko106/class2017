@@ -60,7 +60,6 @@
 (add-hook   'c-mode-hook '(lambda () (hs-minor-mode 1)))
 (define-key global-map (kbd "C-\\") 'hs-toggle-hiding)
 
-(global-auto-complete-mode t)
 (setq ac-ignore-case nil)
 ;; Prolog
 (add-to-list 'auto-mode-alist '("\\.pl$" . prolog-mode))
@@ -129,16 +128,49 @@
 (global-flycheck-mode t)
 (flycheck-pos-tip-mode t)
 
+(global-auto-complete-mode t)
+
+;; company
+(require 'company)
+;; (global-company-mode t)
+;; (setq company-idle-delay 1)
+(set-face-attribute 'company-tooltip nil
+                    :foreground "black" :background "lightgrey")
+(set-face-attribute 'company-tooltip-common nil
+                    :foreground "black" :background "lightgrey")
+(set-face-attribute 'company-tooltip-common-selection nil
+                    :foreground "white" :background "steelblue")
+(set-face-attribute 'company-tooltip-selection nil
+                    :foreground "black" :background "steelblue")
+(set-face-attribute 'company-preview-common nil
+                    :background nil :foreground "lightgrey" :underline t)
+(set-face-attribute 'company-scrollbar-fg nil
+                    :background "orange")
+(set-face-attribute 'company-scrollbar-bg nil
+                    :background "gray40")
+;; C-n, C-pで補完候補を次/前の候補を選択
+(define-key company-active-map (kbd "C-n") 'company-select-next)
+(define-key company-active-map (kbd "C-p") 'company-select-previous)
+(define-key company-search-map (kbd "C-n") 'company-select-next)
+(define-key company-search-map (kbd "C-p") 'company-select-previous)
+;; C-sで絞り込む
+(define-key company-active-map (kbd "C-s") 'company-filter-candidates)
+;; TABで候補を設定
+(define-key company-active-map (kbd "C-j") 'company-complete-selection)
+
 ;; typescript
 (add-hook 'typescript-mode-hook
           (lambda ()
             (tide-setup)
             (eldoc-mode t)
             (setq typescript-indent-level 2)
+            ;; (flycheck-mode t)
+            ;; (setq flycheck-check-syntax-automatically '(save mode-enabled))
             (auto-complete-mode t)
-;;            (company-mode-on)
+            (auto-highlight-symbol-mode t)
+            ;; (auto-complete-mode 0)
+            ;; (company-mode t)
             ))
-
 ;; magit( emacs + git )
 (global-set-key (kbd "C-x g") 'magit-status)
 ;; yatex mode

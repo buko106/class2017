@@ -22,6 +22,12 @@ User 0552824156
 Port 22
 IdentityFile ~/.ssh/id_rsa
 
+Host sakura
+HostName buko106.sakura.ne.jp
+User buko106
+Port 22
+IdentityFile ~/.ssh/id_rsa
+
 Host enshu3
 HostName 133.6.148.92
 User enshu8

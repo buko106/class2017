@@ -5,8 +5,14 @@ if [ -f /usr/local/etc/bash_completion ]; then
 fi
 
 # ls
-export LSCOLORS=gxExcxdxCxegedabagacad
-alias ls='ls -G'
+if [ -d /usr/local/opt/coreutils/libexec/gnubin ] ; then
+    alias ls='gls --color=auto'
+    alias mv='gmv'
+    alias cp='gcp'
+else
+    export LSCOLORS=gxExcxdxCxegedabagacad
+    alias ls='ls -G'
+fi
 alias la='ls -a'
 alias ll='ls -al'
 
@@ -27,5 +33,5 @@ GIT_PS1_SHOWUPSTREAM=auto
 # nodebrew
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 
-# alias
-alias sl='sl -e'
+# brew-cask
+. $HOME/.brew-cask-completion.bash

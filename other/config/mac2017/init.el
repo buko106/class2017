@@ -80,7 +80,9 @@
 (global-set-key [f3] 'highlight-symbol-next)
 (global-set-key [(shift f3)] 'highlight-symbol-prev)
 
-
+;; css/js
+(setq css-indent-offset 2)
+(setq js-indent-level 2)
 
 ;; do not edit below
 (custom-set-variables

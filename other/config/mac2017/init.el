@@ -83,6 +83,7 @@
 ;; css/js
 (setq css-indent-offset 2)
 (setq js-indent-level 2)
+(setq typescript-indent-level 2)
 
 ;; do not edit below
 (custom-set-variables
@@ -92,7 +93,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (highlight-symbol auto-highlight-symbol volatile-highlights guru-mode avy auto-complete))))
+    (vue-mode anki-editor typescript-mode highlight-symbol auto-highlight-symbol volatile-highlights guru-mode avy auto-complete))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

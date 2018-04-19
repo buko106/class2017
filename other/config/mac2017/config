@@ -1,0 +1,5 @@
+Host csc
+    HostName csc-lg1.is.s.u-tokyo.ac.jp
+    User i_hiraide
+    IdentityFile ~/.ssh/id_rsa
+    Port 22

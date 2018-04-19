@@ -9,6 +9,7 @@ if [ -d /usr/local/opt/coreutils/libexec/gnubin ] ; then
     alias ls='gls --color=auto'
     alias mv='gmv'
     alias cp='gcp'
+    alias rm='grm'
 else
     export LSCOLORS=gxExcxdxCxegedabagacad
     alias ls='ls -G'
@@ -33,5 +34,9 @@ GIT_PS1_SHOWUPSTREAM=auto
 # nodebrew
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 
-# brew-cask
-. $HOME/.brew-cask-completion.bash
+# rbenv
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+
+# android sdk
+export ANDROID_HOME=~/Library/Android/sdk
